@@ -152,6 +152,26 @@ OnePage.content = [0, new DisplaySet([{
 	link: "http://thatfishgame.altervista.org/lmaotank/",
 	title: "The LMAO Tank",
 	about: ["It's the sif engine again, but this time with an animated lmaotank - animated text!"]
+},{
+	link: "https://github.com/hydrodog/LiquiZ2",
+	title: "LiquiZ2 (Quiz Engine) [source]",
+	about: ["I led a team of graduate students under Dr. Kruger at Stevens to build this engine. You could run it if you install Tomcat on your computer. I'm looking into simplifying this engine into pure HTML5 with Node.js, but Dr. Kruger favors Java, so that's why you need tomcat, and I don't have a nice link."]
+},{
+	link: "https://github.com/stephoro/ProjectCupcake",
+	title: "Project Cupcake [source]",
+	about: ["One of my current projects, built by my three collegues and I. It uses a custom event system, and will use a grid-like layout and a custom animation format. It also uses BSON. See <a href=\"#apps\">my apps</a> for a better description."]
+},{
+	link: "https://github.com/stephoro/BSON",
+	title: "The BSON Format [source]",
+	about: ["It's like JSON but binary and easy to use. Eventually, I'll likely add the ability to encode cyclical (true graph) object structures (it's not that hard actually), which would give BSON a leg up on JSON. Also, with JSON you need a context-free parser, where the structure of BSON can be tweaked to be regular if desired. (Use null termination to make it regular)."]
+},{
+	link: "https://github.com/stephoro/Better-In-Place-Shifting",
+	title: "Circular Shifting [source]",
+	about: ["Most CS people have heard of the reversal based in-place &Theta;(n) circular shifting algorithm. I came up with one that's O(n), with an upper bound of T=n-1 and a lower bound of T=n/2. It beat the &Theta;(n) version by quite a bit in my tests for all but two edge cases, for which it was about even. &Theta;(n) version also provided in C++."]
+},{
+	link: "https://github.com/stephoro",
+	title: "The Source for Everything",
+	about: ["My Github page. You can find the source for the Drawing Book and Lizard Up (and sifs) there as well as a few other things that didn't make it here."]
 }]),0];
-
+//
 window.onload = OnePage.load;
