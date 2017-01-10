@@ -131,15 +131,27 @@ OnePage.content = [0, new DisplaySet([{
 	about: ["My latest game, Lizard Up. It's a fun and addicting little game where you play as a lizard trying to climb higher and collect shiny coins."]
 }]), new DisplaySet([{
 	title: "The Lab",
-	about: ["Here are some of the cool little projects I've built ranked vaguely based on the coolness factor of each project :)"]
+	about: ["Here are some of the cool little projects I've built ranked vaguely based on the coolness factor of each project. Essentially a curated view of my projects:"]
 },{
 	link: "https://stephoro.github.io/DrawingBook/",
 	title: "Drawing Book",
 	about: ["A fully functional web app for drawing and note taking, I use it to detail app ideas, or code concepts, as it contains infinite pages of infinite size. It saves using my binary script object notation (BSON) format."]
 },{
+	link: "http://thatfishgame.altervista.org/nmssky/",
+	title: "Auto-Animated Scene",
+	about: ["I made a javascript renderer that parses and displays the .sif animated file format! It's pretty cool in my opinion :) This is the no man sky's Atlas animated as a looping display. It changes colors cyclically over a very long period of time, but it should be aparent after five minutes. More examples of this engine appear later."]
+},{
 	link: "https://stephoro.github.io/LizardUp/",
 	title: "Lizard Up",
 	about: ["Not the app, but a web version of this lizard jumping game. Also add free with love <3"]
+},{
+	link: "http://thatfishgame.altervista.org/",
+	title: "That Fish Game",
+	about: ["A silly little game I threw together to showcase my sif animation engine. Catch ten fish and build a fish gun."]
+},{
+	link: "http://thatfishgame.altervista.org/lmaotank/",
+	title: "The LMAO Tank",
+	about: ["It's the sif engine again, but this time with an animated lmaotank - animated text!"]
 }]),0];
 
 window.onload = OnePage.load;
