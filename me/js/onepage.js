@@ -111,7 +111,7 @@ OnePage.links = ["../", "#about", "#apps", "#lab", "../resume/latest.pdf"];
 OnePage.themes = [0, "colorscheme-1", "colorscheme-2", "colorscheme-3", "colorscheme-4"];
 OnePage.content = [0, new DisplaySet([{
 	title: "Greetings!",
-	about: ["I'm Steph, an application developer currently working as the Lead Front-End Engineer on a quiz engine at Stevens! I also write patents, create app graphics, make games, and am a current student at Stevens Institute of Technology in Hoboken, NJ."]
+	about: ["I'm Steph, an application developer currently working as a classroom assistant at Stevens Institute of Technology. I also write patents, create app graphics, make games, and am a current student at Stevens Institute of Technology in Hoboken, NJ. Pursuing a dual bachelor/masters degree."]
 			},{
 	title: "My Experience",
 	about: ["I've been an independent developer for six years and a college student for two of those years. I'm also currently a TA for CS 115, a class on Python at Stevens Institute of Technology. This past summer, I led a team of graduate students to build a quiz engine in HTML5. My current side projects are C++ iOS/Andriod apps, one with three of my collegues, and one independent. My first language (six years past) was Objective C, then I moved into Java, HTML5, C++, and Python. Of those languages, I like working in HTML5, C++, or Python the most. If you want a more in depth look into my recent job history, check out my resume or <a href=\"https://www.linkedin.com/in/stephoro\">LinkedIn</a>. If you want to see what I've done, check out <a href=\"#lab\">The Lab</a> for some cool stuff, or check out <a href=\"#apps\">my apps</a> to see what I've currently got on the market."]
