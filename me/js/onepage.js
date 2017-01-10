@@ -115,17 +115,20 @@ function LinkSet(content) {
   this.container = document.createElement("div");
   this.container.className = "link-buttons";
   this.content = content;
+  this.getContent();
+
 }
 
 LinkSet.prototype.getContent = function () {
+  this.container.innerHTML = null;
   for (var i = 0; i < this.content.length; i++) {
     var obj = this.content[i];
-    var button = document.createElement("a");
+    var a = document.createElement("a");
     a.href = obj.href;
     a.className = "link-button";
-    this.container.appendChild(button);
+    a.innerHTML = obj.title;
+    this.container.appendChild(a);
   }
-
   return this.container;
 };
 
@@ -138,9 +141,14 @@ OnePage.content = [0, new DisplaySet([{
   title: "My Experience",
   about: ["I've been an independent developer for six years and a college student for two of those years. I'm also currently a TA for CS 115, a class on Python at Stevens Institute of Technology. This past summer, I led a team of graduate students to build a quiz engine in HTML5. My current side projects are C++ iOS/Andriod apps, one with three of my collegues, and one independent. My first language (six years past) was Objective C, then I moved into Java, HTML5, C++, and Python. Of those languages, I like working in HTML5, C++, or Python the most. If you want a more in depth look into my recent job history, check out my resume or <a href=\"https://www.linkedin.com/in/stephoro\">LinkedIn</a>. If you want to see what I've done, check out <a href=\"#lab\">The Lab</a> for some cool stuff, or check out <a href=\"#apps\">my apps</a> to see what I've currently got on the market."]
 			}, {
-  title: "Contact",
-  about: ["Email: <a href=\"mailto:stephenjoro@gmail.com\">stephenjoro@gmail.com</a>", "I'm on <a href=\"https://www.linkedin.com/in/stephoro\">LinkedIn</a> as well."]
-		}]), new DisplaySet([{
+  title: "Contact"
+		}, new LinkSet([{
+  title: "E-Mail",
+  href: "mailto:stephenjoro@gmail.com"
+  }, {
+  title: "Linkedin",
+  href: "https://www.linkedin.com/in/stephoro"
+  }])]), new DisplaySet([{
   title: "My Apps",
   about: ["I develop apps, but also am working on products that run on all major platforms Windows, Mac, Linux, iOS, and Andriod using the C++ SDL2 Libraries. ", "My current team project – for the moment titled \"Project Cupcake\" – is an idle clicker type game of the same genre as Tiny Tower or Cookie Clicker. Although it's a work in progress, it makes use of my binary script object notation (BSON), which is an easy to write and parse representation of objects.", "My current independent project – Operator 12 – is a game that honors <a href=\"http://biomediaproject.com/bmp/files/LEGO/gms/online/Spybotics/TheNightfallIncident/\">The Nightfall Incident</a>, which is a classic that’s never had the sequel it deserves. I’ve seen a few people put forth worthy attempts to reproduce the game’s play, but there’s been no high-quality, well-made games in the same play style and I intend to fix that. My own creation is 90% complete, and is awaiting music composition and level design."]
 }, {
@@ -162,6 +170,10 @@ OnePage.content = [0, new DisplaySet([{
   link: "http://thatfishgame.altervista.org/nmssky/",
   title: "Auto-Animated Scene",
   about: ["I made a javascript renderer that parses and displays the .sif animated file format! It's pretty cool in my opinion :) This is the no man sky's Atlas animated as a looping display. It changes colors cyclically over a very long period of time, but it should be aparent after five minutes. More examples of this engine appear later."]
+}, {
+  link: "https://stephoro.github.io/QuestApp/",
+  title: "Quest App",
+  about: ["A little dungeon exploring 8-bit app in HTML5 that is complete, but more features should be added to make it fun. Uses A* pathing if you click/tap away from your character!"]
 }, {
   link: "https://stephoro.github.io/LizardUp/",
   title: "Lizard Up",
