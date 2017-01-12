@@ -170,6 +170,10 @@ OnePage.content = [0, new DisplaySet([{
   title: "Quest App",
   about: ["A little dungeon exploring 8-bit app in HTML5 that is complete, but more features should be added to make it fun. Uses A* pathing if you click/tap away from your character!"]
 }, {
+  link: "http://bluecode.altervista.org/JsQuest/regex.html",
+  title: "Regex Functional Replacement",
+  about: ["I use this every once and a while, it's a tool I made that allows regular patterns to be replaced with the output of a javascript function. Very useful to me."]
+}, {
   link: "https://stephoro.github.io/LizardUp/",
   title: "Lizard Up",
   about: ["Not the app, but a web version of this lizard jumping game. Also add free with love <3"]
