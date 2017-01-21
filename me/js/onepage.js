@@ -158,6 +158,10 @@ OnePage.content = [0, new DisplaySet([{
   title: "The Lab",
   about: ["Here are some of the cool little projects I've built ranked vaguely based on the coolness factor of each project. Essentially a curated view of my projects:"]
 }, {
+  link: "https://stephoro.github.io/ListInput/",
+  title: "List Input",
+  about: ["A usefule multi-item text input that submits an Array in JSON format on form submission. I built this according to requirements I was given, and added a few features of my own design as this was allowed by the requirements. Very simple to use, and well <a href='https://stephoro.github.io/ListInput/documentation'>documented</a>."]
+}, {
   link: "https://stephoro.github.io/DrawingBook/",
   title: "Drawing Book",
   about: ["A fully functional web app for drawing and note taking, I use it to detail app ideas, or code concepts, as it contains infinite pages of infinite size. It saves using my binary script object notation (BSON) format."]
