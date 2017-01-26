@@ -145,7 +145,7 @@ OnePage.content = [0, new DisplaySet([{
           about: ["Email: <a href=\"mailto:stephenjoro@gmail.com\">stephenjoro@gmail.com</a>", "I'm on <a href=\"https://www.linkedin.com/in/stephoro\">LinkedIn</a> as well."]
 		}]), new DisplaySet([{
   title: "My Apps",
-  about: ["I develop apps, but also am working on products that run on all major platforms Windows, Mac, Linux, iOS, and Andriod using the C++ SDL2 Libraries. ", "My current team project – for the moment titled \"Project Cupcake\" – is an idle clicker type game of the same genre as Tiny Tower or Cookie Clicker. Although it's a work in progress, it makes use of my binary script object notation (BSON), which is an easy to write and parse representation of objects.", "My current independent project – Operator 12 – is a game that honors <a href=\"http://biomediaproject.com/bmp/files/LEGO/gms/online/Spybotics/TheNightfallIncident/\">The Nightfall Incident</a>, which is a classic that’s never had the sequel it deserves. I’ve seen a few people put forth worthy attempts to reproduce the game’s play, but there’s been no high-quality, well-made games in the same play style and I intend to fix that. My own creation is 90% complete, and is awaiting music composition and level design."]
+  about: ["I develop apps, but also am working on products that run on all major platforms Windows, Mac, Linux, iOS, and Andriod using the C++ SDL2 Libraries. ", "My current team project – for the moment titled \"Project Cupcake\" – is an idle clicker type game of the same genre as Tiny Tower or Cookie Clicker. Although it's a work in progress, it makes use of my circular script object notation (CSON) - which will be getting circular support shortly - which is an easy to write and parse representation of objects.", "My current independent project – Operator 12 – is a game that honors <a href=\"http://biomediaproject.com/bmp/files/LEGO/gms/online/Spybotics/TheNightfallIncident/\">The Nightfall Incident</a>, which is a classic that’s never had the sequel it deserves. I’ve seen a few people put forth worthy attempts to reproduce the game’s play, but there’s been no high-quality, well-made games in the same play style and I intend to fix that. My own creation is 90% complete, and is awaiting music composition and level design."]
 }, {
   link: "https://appsto.re/us/QaTI9.i",
   title: "iPeters",
@@ -164,7 +164,7 @@ OnePage.content = [0, new DisplaySet([{
 }, {
   link: "https://stephoro.github.io/DrawingBook/",
   title: "Drawing Book",
-  about: ["A fully functional web app for drawing and note taking, I use it to detail app ideas, or code concepts, as it contains infinite pages of infinite size. It saves using my binary script object notation (BSON) format."]
+  about: ["A fully functional web app for drawing and note taking, I use it to detail app ideas, or code concepts, as it contains infinite pages of infinite size. It saves using my circular script object notation (CSON) binary format."]
 }, {
   link: "http://thatfishgame.altervista.org/nmssky/",
   title: "Auto-Animated Scene",
@@ -196,11 +196,11 @@ OnePage.content = [0, new DisplaySet([{
 }, {
   link: "https://github.com/stephoro/ProjectCupcake",
   title: "Project Cupcake [source]",
-  about: ["One of my current projects, built by my three collegues and I. It uses a custom event system, and will use a grid-like layout and a custom animation format. It also uses BSON. See <a href=\"#apps\">my apps</a> for a better description."]
+  about: ["One of my current projects, built by my three collegues and I. It uses a custom event system, and will use a grid-like layout and a custom animation format. It also uses CSON. See <a href=\"#apps\">my apps</a> for a better description."]
 }, {
-  link: "https://github.com/stephoro/BSON",
-  title: "The BSON Format [source]",
-  about: ["It's like JSON but binary and easy to use. Eventually, I'll likely add the ability to encode cyclical (true graph) object structures (it's not that hard actually), which would give BSON a leg up on JSON. Also, with JSON you need a context-free parser, where the structure of BSON can be tweaked to be regular if desired. (Use null termination to make it regular)."]
+  link: "https://github.com/stephoro/CSON",
+  title: "The CSON Format [source]",
+  about: ["It's like JSON but binary and easy to use. Eventually, I'll likely add the ability to encode cyclical (true graph) object structures (it's not that hard actually), which would give CSON a leg up on JSON and BSON. Also, with JSON you need a context-free parser, where the structure of CSON can be tweaked to be regular if desired. (Use null termination to make it regular)."]
 }, {
   link: "https://github.com/stephoro/Better-In-Place-Shifting",
   title: "Circular Shifting [source]",
