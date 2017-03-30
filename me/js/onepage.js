@@ -178,7 +178,7 @@ OnePage.content = [0, new DisplaySet([
 }, 
 
 {
-  link: "https://stephoro.github.io/DuckHacks2017/",
+  link: "https://github.com/stephoro/DuckHacks2017/",
   title: "DuckHacks 2017 Category Winning Project (Thrive)",
   about: ["For this project, I acted as an agile coach and programmer working with a team consisting of two freshmen computer science majors, and two sophmore engineers. We made a useful product that tracks browsing activity and helps individuals become more cognizant of their browsing habits."]
 }, 
