@@ -256,12 +256,6 @@ OnePage.content = [0, new DisplaySet([
 }, 
 
 {
-  link: "https://github.com/stephoro/Better-In-Place-Shifting",
-  title: "Circular Shifting [source]",
-  about: ["Most CS people have heard of the reversal based in-place &Theta;(n) circular shifting algorithm. I came up with one that's O(n), with an upper bound of T=n-1 and a lower bound of T=n/2. It beat the &Theta;(n) version by quite a bit in my tests for all but two edge cases, for which it was about even. &Theta;(n) version also provided in C++."]
-}, 
-
-{
   link: "https://github.com/stephoro",
   title: "The Source for Everything",
   about: ["My Github page. You can find the source for the Drawing Book and Lizard Up (and sifs) there as well as a few other things that didn't make it here."]
