@@ -132,7 +132,7 @@ LinkSet.prototype.getContent = function () {
   return this.container;
 };
 
-OnePage.links = ["../", "#about", "#apps", "#lab", "../resume/latest.pdf"];
+OnePage.links = ["../", "#about", "#apps", "#lab", "../resume/StephOro.pdf"];
 OnePage.themes = [0, "colorscheme-1", "colorscheme-2", "colorscheme-3", "colorscheme-4"];
 OnePage.content = [0, new DisplaySet([
 
