@@ -178,6 +178,30 @@ OnePage.content = [0, new DisplaySet([
 }, 
 
 {
+  link: "https://github.com/stephoro/sniffle-interpreter",
+  title: "Sniffle Interpreter",
+  about: ["My very own interpreted language :) (interpreted via a C++ engine I wrote for it). I created the current build as an excercise in 'Can I build a cross-platform scripting language?' I really wanted to have my own language for general purpose scripting in cross platform SDL2 based applications, and this was my inital solution. I intend to take a good look into the CPython interpreter, and eventually make this just as fast and useable as Python (albeit with less modules) and move the interpreter fully into C instead of C++. It is currently slower than most modern scripting languages and is a real pain to use in practice, but I intend to fix pain points. Feature set listed in project readme. Documentation in header files."]
+}, 
+    
+{
+  link: "https://github.com/stephoro/perspective-game-mango/",
+  title: "Perspective Game Mango",
+  about: ["This project is an initial MVP build of a point and click iOS game engine. It features my LISP-like interpreted language - Sniffle and runs games through this scripting language. More details in project readme."]
+}, 
+    
+{
+  link: "https://github.com/stephoro/c-server-guacamole",
+  title: "C Server Guacamole",
+  about: ["A curses based tcp chat client & server built from scratch in C. It doesn't even use the standard string library - it has it's own. Also has its own linked list. Eventually, I intend to build more interesting features like basic encryption and file sharing."]
+}, 
+    
+{
+  link: "https://github.com/stephoro/image-mangler",
+  title: "Image Mangler",
+  about: ["A sample steganography project I built. Complete with demo if you download it."]
+}, 
+
+{
   link: "https://github.com/stephoro/DuckHacks2017/",
   title: "DuckHacks 2017 Category Winning Project (Thrive)",
   about: ["For this project, I acted as an agile coach and programmer working with a team consisting of two freshmen computer science majors, and two sophmore engineers. We made a useful product that tracks browsing activity and helps individuals become more cognizant of their browsing habits."]
@@ -257,7 +281,7 @@ OnePage.content = [0, new DisplaySet([
 
 {
   link: "https://github.com/stephoro",
-  title: "The Source for Everything",
+  title: "And More! (Including Source Code)",
   about: ["My Github page. You can find the source for the Drawing Book and Lizard Up (and sifs) there as well as a few other things that didn't make it here."]
 }
 
