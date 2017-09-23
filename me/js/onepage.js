@@ -138,24 +138,24 @@ OnePage.content = [0, new DisplaySet([
 
 {
   title: "Greetings!",
-  about: ["I'm Steph, an application developer currently working as a classroom assistant at Stevens Institute of Technology. I also write patents, create app graphics, make games, and am a current student at Stevens Institute of Technology in Hoboken, NJ. Pursuing a B.S. degree. I'm currently 2/3 (I'm graduating in three years instead of the normal four)."]
+  about: ["I'm Steph, an application developer currently working as a classroom assistant at Stevens Institute of Technology. This summer I interned at Nokia Bell Labs. In my spare time, I enjoy making games and pursuing other programming projects. I am a current student at Stevens Institute of Technology in Hoboken, NJ. Pursuing a B.S. degree. I'm currently 3/3 graduating in May, 2018 (I'm graduating in three years instead of the normal four)."]
 			},
 
 {
   title: "My Experience",
-  about: ["I've been an independent developer for six years and a college student for two of those years. I'm also currently a TA for CS 115, a class on Python at Stevens Institute of Technology. Most recently, I just led a team to win one of five categories at the DuckHacks hackaton (see <a href=\"#lab\">The Lab</a> for details). This past summer, I led a team of graduate students to build a quiz engine in HTML5. My current side projects are C++ iOS/Andriod apps, one with three of my collegues, and one independent. My first language (six years past) was Objective C, then I moved into Java, HTML5, C++, and Python. Of those languages, I like working in HTML5, C++, or Python the most. If you want a more in depth look into my recent job history, check out my resume or <a href=\"https://www.linkedin.com/in/stephoro\">LinkedIn</a>. If you want to see what I've done, check out <a href=\"#lab\">The Lab</a> for some cool stuff, or check out <a href=\"#apps\">my apps</a> to see what I've currently got on the market."]
+  about: ["I've been an independent developer for seven years and a college student for three of those years. I'm also currently a TA for CS 115, a class on Python at Stevens Institute of Technology. This past summer, I interned at Bell Labs, working on a professional app development team preparing a product app for an enterprise release. My current side projects are C++ iOS/Andriod apps. My first language (seven years past) was Objective C, followed by Java, HTML5/JavaScript, C++, and Python as well as a few others. Of the languages I know, I find JavaScript, C++, and Python the most useful. If you want a more in depth look into my recent job history, check out my resume or <a href=\"https://www.linkedin.com/in/stephoro\">LinkedIn</a>. If you want to see what I've done, check out <a href=\"#lab\">The Lab</a> for some cool stuff, or check out <a href=\"#apps\">my apps</a> to see what I've currently got on the market."]
 			}, 
 
 {
   title: "Contact",
-          about: ["Email: <a href=\"mailto:stephenjoro@gmail.com\">stephenjoro@gmail.com</a>", "I'm on <a href=\"https://www.linkedin.com/in/stephoro\">LinkedIn</a> as well."]
+          about: ["LinkedIn: <a href=\"https://www.linkedin.com/in/stephoro\">https://www.linkedin.com/in/stephoro</a>"]
 		}
 
 ]), new DisplaySet([
 
 {
   title: "My Apps",
-  about: ["I develop apps, but also am working on products that run on all major platforms Windows, Mac, Linux, iOS, and Andriod using the C++ SDL2 Libraries. ", "My current team project – for the moment titled \"Project Cupcake\" – is an idle clicker type game of the same genre as Tiny Tower or Cookie Clicker. Although it's a work in progress, it makes use of my circular script object notation (CSON) - which will be getting circular support shortly - which is an easy to write and parse representation of objects.", "My current independent project – Operator 12 – is a game that honors <a href=\"http://biomediaproject.com/bmp/files/LEGO/gms/online/Spybotics/TheNightfallIncident/\">The Nightfall Incident</a>, which is a classic that’s never had the sequel it deserves. I’ve seen a few people put forth worthy attempts to reproduce the game’s play, but there’s been no high-quality, well-made games in the same play style and I intend to fix that. My own creation is 90% complete, and is awaiting music composition and level design."]
+  about: ["I develop apps, but also am working on products that run on all major platforms Windows, Mac, Linux, iOS, and Andriod using the C++ SDL2 Libraries. ", "My latest project – for the moment titled \"Perspective Game Mango\" – is a point and click game meant as an experiment in connecting a scripting language I developed \"Sniffle\" to the iOS SpriteKit. I discovered that my first attempt at a scripting language was quite difficult to use for any practical purpose - I plan on looking into the CPython Interpreter when I have the time to make it more usable."]
 }, 
 
 {
