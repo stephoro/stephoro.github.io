@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['dialogue',['Dialogue',['../classDialogue.html',1,'']]]
+  ['collectable',['Collectable',['../classCollectable.html',1,'']]]
 ];

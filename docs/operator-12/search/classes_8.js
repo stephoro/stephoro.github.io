@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['sector',['Sector',['../classSector.html',1,'']]],
-  ['segment',['Segment',['../classSegment.html',1,'']]],
-  ['slug',['Slug',['../classSlug.html',1,'']]],
-  ['slugselect',['SlugSelect',['../classSlugSelect.html',1,'']]]
+  ['mainmenu',['MainMenu',['../classMainMenu.html',1,'']]],
+  ['map',['Map',['../classMap.html',1,'']]],
+  ['mapselect',['MapSelect',['../classMapSelect.html',1,'']]],
+  ['moneyobject',['MoneyObject',['../classMoneyObject.html',1,'']]]
 ];

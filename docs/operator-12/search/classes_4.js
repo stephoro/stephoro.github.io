@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['heap',['Heap',['../classHeap.html',1,'']]]
+  ['dialogue',['Dialogue',['../classDialogue.html',1,'']]]
 ];

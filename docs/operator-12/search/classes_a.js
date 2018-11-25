@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['uielement',['UIElement',['../classUIElement.html',1,'']]],
-  ['util',['Util',['../classUtil.html',1,'']]]
+  ['sector',['Sector',['../classSector.html',1,'']]],
+  ['segment',['Segment',['../classSegment.html',1,'']]],
+  ['slug',['Slug',['../classSlug.html',1,'']]],
+  ['slugselect',['SlugSelect',['../classSlugSelect.html',1,'']]]
 ];

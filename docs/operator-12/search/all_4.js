@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['despawn',['despawn',['../classSlug.html#ab4a1314fff2686fac0f4fd56a5be59c0',1,'Slug']]],
+  ['despawn',['despawn',['../classSlug.html#ab4a1314fff2686fac0f4fd56a5be59c0',1,'Slug::despawn()'],['../classCollectable.html#a373534fb2f4d0d476a2003f0c2f656f0',1,'Collectable::despawn()']]],
   ['destroy',['destroy',['../classBattleUI.html#ac6a2207a181a0c3842a80a92f85c7e9a',1,'BattleUI']]],
   ['destroybuttons',['destroyButtons',['../classMapSelect.html#a64034faa6104661e1176e58b02d73566',1,'MapSelect']]],
   ['dialogue',['Dialogue',['../classDialogue.html',1,'']]],
