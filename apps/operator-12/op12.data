@@ -6,7 +6,7 @@ Util = {}
 ]]
 function Util.KeyUp(key)
    if key == KEY_ESCAPE then
-	  static.quit()
+      static.quit()
    end
 end
 
@@ -26,6 +26,16 @@ end
 function Util.Resize(w, h)
    SCREEN_WIDTH = w
    SCREEN_HEIGHT = h
+end
+
+--[[--
+   mousewheel fallback
+
+   @param x 
+   @param y 
+]]
+function Util.MouseWheel(x, y, dx, dy)
+   
 end
 
 --[[--
@@ -64,13 +74,13 @@ end
    @param controller 
 ]]
 function Util.setController(controller)
-   local f = {"Start", "Update", "End", "Resize", "KeyDown", "KeyUp", "MouseDown", "MouseMove", "MouseUp"}
+   local f = {"Start", "Update", "End", "Resize", "KeyDown", "KeyUp", "MouseWheel", "MouseDown", "MouseMove", "MouseUp"}
    for i, v in ipairs(f) do
-	  if controller[v] then
-		 rawset(_G, v, controller[v])
-	  else
-		 rawset(_G, v, Util[v])
-	  end
+      if controller[v] then
+	 rawset(_G, v, controller[v])
+      else
+	 rawset(_G, v, Util[v])
+      end
    end
 end
 
@@ -83,7 +93,7 @@ end
 ]]
 function Util.isMain()
    if Util.main then
-	  return false
+      return false
    end
    Util.main = true
    return true
@@ -97,163 +107,57 @@ end
 ]]
 function Util.try(isMain, controller)
    if isMain then
-	  Util.setController(controller)
+      Util.setController(controller)
    end
 end
 import json
 import os
 
 def listall(path):
-    things = sorted([x for x in os.listdir(path) if x != ".contents.lua" and not x.endswith("~")])
+    things = sorted([x for x in os.listdir(path) if x != "contents.lua" and not x.endswith("~")])
     for i, thing in enumerate(things):
         if os.path.isdir(os.path.join(path, thing)):
             things[i] = thing + "/"
-    with open(os.path.join(path, ".contents.lua"), 'w') as f:
+    with open(os.path.join(path, "contents.lua"), 'w') as f:
         f.write('return {' + ','.join([json.dumps(x) for x in things]) + '}') 
     for i, thing in enumerate(things):
         if os.path.isdir(thing):
             listall(os.path.join(path, thing))
 
 listall(".")
+return {"add-missing-docs.py","ai/","algorithms/","android.lua","battle/","cmd/","data/","dialogue/","fonts/","images/","level-select/","licenses/","listdir.py","load.lua","maps/","model/","money/","music-test.lua","sheets/","slug/","surface-tests.lua","text/","texture-tests.lua","tiled/","ui/","util/","util.lua","viewer/","world/"}function require(modname)
+   if package.loaded[modname] then
+      return package.loaded[modname]
+   end
+   local mod = Game.static.readfile(modname .. ".lua")
+   local x = load(mod)
+   if x == nil then
+      x = true
+   else
+      x = x() or true
+   end
+   package.loaded[modname] = x
+   return package.loaded[modname]
+end
+
+function dofile(fname)
+   local mod = Game.static.readfile(fname)
+   local x = load(mod, fname)
+   if x then
+      x = x()
+   end
+   return x
+end
+
+require("load")
+return {
+   load="load.lua",
+   doInitSDL=true
+}
 require("util")
 local isMain = Util.isMain()
-
---[[
-   Render to texture + glitch art.
-
-   Also a good demo of what textures can do currently
-]]
-function Start()
-   t,w,h = Texture.new("images/headsprites.png")
-   static.renderBlendmode(BLENDMODE_BLEND);
-   tar = Texture.newTarget(SCREEN_WIDTH, SCREEN_HEIGHT)
-   Texture.blendmode(tar, BLENDMODE_BLEND)
-   Texture.blendmode(t, BLENDMODE_NONE)
-   static.setRenderTarget(tar)
-   static.renderClear()
-   for x = 0,SCREEN_WIDTH//w do
-	  for y = 0,SCREEN_WIDTH//h do
-		 Texture.renderCopy(t,0,0,w,h,x*w,y*h,w,h)
-	  end
-   end
-   static.unsetRenderTarget(tar)
-   static.framedelay(1000//60)
-end
-
---[[
-   draw some random colored copies
-]]
-function Update()
-   local y = 20
-   Texture.setRGBMask(tar,255,255,255)
-   Texture.setAMask(tar,255)
-   Texture.renderCopy(tar,0,0,SCREEN_WIDTH, SCREEN_HEIGHT,0,0,SCREEN_WIDTH, SCREEN_HEIGHT)
-   makeGlitch(tar, {0,0,SCREEN_WIDTH, SCREEN_HEIGHT})
-   --Update = static.quit
-end
-
---[[
-   destroy shit
-]]
-function End()
-   Texture.destroy(t)
-   Texture.destroy(tar)
-end
-
---[[
-   Render one colored copy of a portion of target texture to the screen
-
-   @param tar Texture to copy
-   @param r rect size of area to copy to
-]]
-function makeOneGlitch(tar, r)
-   local d={}
-   local e={}
-   local f = {}
-   local minw = 5
-   for i=1,2 do
-	  local w = r[i+2]
-	  d[i]=math.random(r[i],r[i]+w-5)
-	  e[i]=math.random(r[i],r[i]+w-5)
-
-	  d[i+2]=math.random(5,w-(d[i]-r[i]))
-   end
-   if math.random(1,100) > 20 then
-	  d[math.random(3,4)]=minw
-   end
-   for i =1,4 do
-	  f[i]=math.random(255,255)
-   end
-   for i=1,2 do
-	  f[math.random(1,3)]=0
-   end
-   --f[4] = 255
-   Texture.setRGBMask(tar,f[1],f[2],f[3])
-   Texture.setAMask(tar,f[4])
-   Texture.renderCopy(tar,d[1],d[2],d[3],d[4], e[1],e[2],d[3],d[4])
-end
-
---[[
-   Render many colored copy of a portion of target texture to the screen
-
-   @param tar Texture to copy
-   @param r rect size of area to copy to
-]]
-function makeGlitch(tar, r)
-   for i = 1,20 do
-	  makeOneGlitch(tar, r)
-   end
-end
-
---purely a test class, so I used globals and then just told Util to pull off the global env instead of a class
-Util.try(isMain, _G)
-require("util")
-local isMain = Util.isMain()
-
---[[
-   Render to texture + glitch art.
-
-   Also a good demo of what textures can do currently
-]]
-function Start()
-   music, err = Music.new("test.ogg")
-   print(music, err)
-   paused = false
-   music:play(-1)
-   static.framedelay(1000)
-end
-
---[[
-   draw some random colored copies
-]]
-function Update()
-   --Update = static.quit
-end
-
---[[
-   destroy shit
-]]
-function End()
-   music:destroy()
-end
-
-function KeyDown(k)
-   if k == KEY_ESCAPE then
-	  static.quit()
-   elseif k == KEY_SPACE then
-	  paused = not paused
-	  if paused then
-		 music:pause()
-	  else
-		 music:resume()
-	  end
-   end
-end
-
---purely a test class, so I used globals and then just told Util to pull off the global env instead of a class
-Util.try(isMain, _G)
-require("util")
-local isMain = Util.isMain()
+require("flex/flex")
+require("data/save")
 require("ui/UIElement")
 require("ui/ListButton")
 require("level-select/load")
@@ -268,10 +172,45 @@ local M = MainMenu
 ]]
 function MainMenu.switchTo(controller)
    return function()
-	  M.End()
-	  Util.setController(controller)
-	  Start(0,{})
+      M.End()
+      Util.setController(controller)
+      Start(0,{})
    end
+end
+
+function MainMenu.layout()
+   local class = UIButton
+   local rows, cols = 4, 4
+
+   local space = {size={10, "dp"}}
+   local childRow = {}
+   local key = 1
+   for i = 1, 2 * rows, 2 do
+      local childCol = {}
+      for j = 1, 2 * cols, 2 do
+	 childCol[j] = space
+	 childCol[j + 1] = {class=class,
+						name=key,
+			    size={1,"w"},
+			    color="ff00ff"}
+	 key = key + 1
+      end
+      childCol[2 * cols + 1] = space
+      childRow[i] = space
+      childRow[i + 1] = {axis=horizontal,
+			 size={1,"w"},
+			 children=childCol}
+   end
+   childRow[2 * rows + 1] = space
+   
+   return {
+      axis=horizontal,
+      children={
+	 {axis=vertical,
+	  size={1,"w"},
+	  children=childRow}
+      }
+   }
 end
 
 --[[--
@@ -284,16 +223,37 @@ function MainMenu.toCredits()
 end
 
 --[[
-   click button
+   standard Flex mouse down
 
    @param x 
    @param y 
 ]]
 function MainMenu.MouseDown(x,y)
-   local b = M.buttons:which(x,y)
-   if b then
-	  b:click()
-   end
+   Flex.mouseDown(M, x, y)
+end
+
+--[[
+   standard Flex mouse move
+
+   @param x 
+   @param y 
+]]
+function MainMenu.MouseMove(x,y)
+   Flex.mouseMove(M, x, y)
+end
+
+--[[
+   standard Flex mouse up
+
+   @param x 
+   @param y 
+]]
+function MainMenu.MouseUp(x,y)
+   Flex.mouseUp(M, x, y)
+end
+
+function MainMenu.MouseWheel(x,y,dx,dy)
+   Flex.mouseWheel(M, x, y, dx, dy)
 end
 
 --[[
@@ -304,38 +264,59 @@ end
 ]]
 function MainMenu.Resize(w,h)
    Util.Resize(w,h)
-   UIElement.recalc(M.scene)
-   M.buttons:resize()
+   M.rects = Flex.calculateRects(M.cells, {0,0,SCREEN_WIDTH,SCREEN_HEIGHT})
+   Flex.setRects(M.views, M.rects)
+   --UIElement.recalc(M.scene)
+   --M.buttons:resize()
+   
 end
 
 --[[--
    Basic menu setup
 ]]
 function MainMenu.Start()
-   M.buttons = ListButton.new(
-	  "menu",
-	  {M.switchTo(MapSelect),M.toCredits,M.switchTo(World),M.switchTo(Dialogue)},
-	  {"Level Selection", "Credits/Thanks", "World Map Test", "Dialogue Test"},
-	  60, 10, 2)
-   M.scene = {{s="screen",c={M.buttons.container}}}
-   M.named, M.scene = UIElement.getNamed(
-	  M.scene, getStyles({"list-button", "screen"}))
-   M.buttons:init(M.named)
+   M.cells = Flex.load("layout.lua")
+   local named = Flex.getNamed(M.cells.children)
+   named.main.size[1] = ListButton.heightOf(4, 60, 10)
+   M.rects = Flex.calculateRects(M.cells, {0,0,SCREEN_WIDTH,SCREEN_HEIGHT})
+   M.views = Flex.new(M.cells, M.rects)
+   named = Flex.getNamed(M.views)
+   ListButton.init(named.main,
+				   {M.switchTo(MapSelect),M.toCredits,M.switchTo(World),M.switchTo(Dialogue)},
+				   {"Level Selection", "Credits/Thanks", "World Map Test", "Dialogue Test"},
+				   60, 10)
+   --[[local data = {"EEE", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p"}
+   local named = Flex.getNamed(M.views) 
+   for i, v in ipairs(data) do
+	  local dat = {text=v, click=M.click}
+	  if i > 6 then
+		 dat = {color="00ff0000"}
+	  end
+      named[i]:setData(dat)
+	  end]]
+end
+
+function MainMenu.click(object, pt)
+   print("click reg @", pt[1], pt[2], object.text)
 end
 
 --[[
-   draw shit
+   draw things
 ]]
 function MainMenu.Update()
    --Update=static.quit
-   M.buttons:draw()
+   Flex.draw(M.views)
+   --M.buttons:draw()
 end
 
 --[[
-   destroy shit
+   destroy things
 ]]
 function MainMenu.End()
-   M.buttons:destroy()
+   Flex.destroy(M.views)
+   M.views = nil
+   M.cells = nil
+   M.rects = nil
 end
 
 Util.try(isMain, M)
@@ -374,60 +355,1205 @@ def listall(path):
             
 
 listall(".")
-return {"add-missing-docs.py","ai/","algorithms/","battle/","cmd/","data/","dialogue/","fonts/","images/","level-select/","licenses/","listdir.py","load.lua","maps/","money/","music-test.lua","sheets/","slug/","surface-tests.lua","text/","texture-tests.lua","tiled/","ui/","util/","util.lua","viewer/","world/"}require("util")
+return {
+   load="load.lua",
+   doInitSDL=true
+}
+return {
+   axis=vertical,
+   children={
+	  {size={1,"w"}},
+      {class=UIList,
+	   axis = vertical,
+	   name = "main",
+       size={100,"dp"}},
+	  {size={1,"w"}},
+   }
+}
+require("util")
+util.isMain()
+
+UIView = Class()
+require("util")
+
+UIGroup = Class()
+Flex.UIGroup = UIGroup
+
+--[[
+   arbitrary grouping ui class
+]]
+function UIGroup.new(cell, rect)
+   local self = {}
+   setmetatable(self, UIGroup)
+   return self
+end
+
+function UIGroup:setRect(rect)
+end
+
+function UIGroup:setData(data)
+   if self.children then
+      Flex.setData(self.children, data)
+   end
+end
+
+function UIGroup:draw()
+end
+
+function UIGroup:destroy()
+end
+require("util")
+Util.isMain()
+
+UIListGroup = Class()
+function UIGroup.new(cell, rect)
+   local self = {}
+   setmetatable(self, UIGroup)
+   return self
+end
+
+function UIGroup:setRect(rect)
+end
+
+function UIGroup:setData(data)
+   Flex.setData(self.children, data)
+end
+
+function UIGroup:draw()
+end
+
+function UIGroup:destroy()
+end
+return {
+   axis=vertical,
+   children={
+      {axis=horizontal,
+       size={1,"w"},
+       children={
+	  {class=UIView,
+	   size={50,"dp"},
+	   color="ff00ff"},
+
+	  {class=UIView,
+	   size={1,"w"},
+	   color="00ff00"},
+
+	  {class=UIView,
+	   size={50,"dp"},
+	   color="ff00ff"},
+
+	  {class=UIView,
+	   size={1,"w"},
+	   color="ff0000"},
+
+	  {class=UIView,
+	   size={50,"dp"},
+	   color="ff00ff"},
+      }},
+
+      {class=UIView,
+       size={1,"w"},
+       color="0000ff"},
+   }
+}
+<?xml version="1.0" encoding="UTF-8"?>
+<Group>
+  <View color="ff00ff"></View>
+  <View color="0000ffcc"/>
+  <Bird flying="true"/>
+  <View color="0000ffcc"/>
+</Group>
+Flex = {
+   rDrag = 10,
+   horizontal = 1,
+   vertical = 2,
+}
+require("flex/UIGroup")
+require("flex/UIList")
+require("flex/UITextBox")
+require("flex/UIView")
+require("flex/UIButton")
+
+--[[--
+   calculate the rects that views will take up given the
+   parent rect (usually {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}
+   and the view's layout cell.
+
+   @param cell {axis=1|2, class=string, size={int, "dp"|"sp"|"w"}, children?={cell+}}
+   @param rect {X, Y, W, H}
+   @return rects of the cells
+]]
+function Flex.calculateRects(cell, rect, nolimit)
+   local direction = cell.axis
+   local odirection = 1
+   if direction == 1 then
+      odirection = 2
+   else
+      direction = 2
+   end
+   local size = rect[direction + 2]
+   local osize = rect[odirection + 2]
+   local x = rect[direction]
+   local ox = rect[odirection]
+   
+   local flexible = size
+   local weight = 0
+   local children = cell.children
+   -- calculate how much room standard things take up
+   -- sum weights
+   for i, child in ipairs(children) do
+      local amount = child.size
+      if amount[2] == "dp" then -- density dependant pix
+		 flexible = flexible - amount[1]
+      elseif amount[2] == "sp" then -- scalable pix
+		 flexible = flexible - amount[1]
+      elseif amount[2] == "w" then --weight
+		 weight = weight + amount[1]
+      end
+   end
+   local rects = {}
+   --generate rects
+   for i, child in ipairs(children) do
+      local amount = child.size
+      local mass = 0
+      if amount[2] == "dp" then -- density dependant pix
+		 mass = amount[1]
+      elseif amount[2] == "sp" then -- scalable pix
+		 mass = amount[1]
+      elseif amount[2] == "w" and flexible >= 0 then --weight
+		 mass = math.ceil(amount[1] / weight * flexible)
+		 if mass > flexible then
+			mass = flexible
+		 end
+		 flexible = flexible - mass
+		 weight = weight - amount[1]
+      end
+      if not nolimit and mass > size then
+		 mass = size
+      end
+      size = size - mass
+      rects[i] = Flex.makebox(direction, odirection, x, ox, mass, osize)
+      x = x + mass
+   end
+
+   --generate children rects
+   for i, child in ipairs(children) do
+      if child.children then
+		 rects[i].children = Flex.calculateRects(child, rects[i])
+      end
+   end
+
+   return rects
+end
+
+--[[--
+   helper function to make a rect
+
+   @param direction primary direction either 1|2 (horizontal|vertical)
+   @param odirection secondary direction either 1|2 (horizontal|vertical)
+   opposite of direction
+   @param x position (x|y) of start of rect in the primary axis
+   @param ox position (x|y) of start of rect in the secondary axis
+   @param size size (width|height) of start of rect in the primary axis
+   @param osize size (width|height) of start of rect in the secondary axis
+   @return crafted rect
+]]
+function Flex.makebox(direction, odirection, x, ox, size, osize)
+   local rect = {0, 0, 0, 0}
+   rect[direction] = x
+   rect[odirection] = ox
+   rect[direction + 2] = size
+   rect[odirection + 2] = osize
+   return rect
+end
+
+--[[--
+   Initialize the views given the layout (cell) and the rects
+   these should occupy
+
+   @param cell the layout
+   @param rects generated by Flex.calculateRects
+   @return newly created views
+]]
+function Flex.new(cell, rects)
+   local views = {}
+   views.n = #rects
+   for i, rect in ipairs(rects) do
+      local child = cell.children[i]
+      if (not child.class) and child.children then
+		 child.class = UIGroup
+      end
+      if child.class then
+		 local class = child.class
+		 views[i] = class.new(child, rect, i)
+      end
+      if child.children then
+		 views[i].children = Flex.new(child, rect.children)
+      end
+   end
+   return views
+end
+
+--[[--
+   Set the rects of views
+   
+   @param views to have their rects set
+   @param rects to set as the views' rects
+]]
+function Flex.setRects(views, rects)
+   for i = 1, views.n do
+      local child = views[i]
+      local rect = rects[i]
+      if child then
+		 child:setRect(rect)
+		 if child.children then
+			Flex.setRects(child.children, rect.children)
+		 end
+      end
+   end
+end
+
+--[[--
+   is `pt` in `rect`
+   @param pt point to check
+   @param rect to test if in
+   @return whether `pt` in `rect`
+]]
+function Flex.isInBound(pt, rect)
+   return pt[1] >= rect[1] and pt[1] <= rect[1] + rect[3] and pt[2] >= rect[2] and pt[2] <= rect[2] + rect[4]
+end
+
+--[[
+   Function that makes objectAtPoint work to find draggable objects
+   @return returns nil if not a draggable object, object otherwise
+]]
+function Flex.doGetDraggable(object, pt)
+   if object.draggable then
+      return object
+   end
+end
+
+--[[--
+   If there is a draggable object at point fetch it
+   @return returns nil if no a draggable object at point, view otherwise
+]]
+function Flex.getDraggable(pt, views, rects)
+   return Flex.objectAtPoint(pt, views, rects, Flex.doGetDraggable)
+end
+
+--[[
+   Function that makes objectAtPoint work as a clicking function
+   @return non nil/false if click was consumed, nil/false otherwise
+]]
+function Flex.doClick(object, pt)
+   if object.click then
+      return object.click(object, pt)
+   end
+end
+
+--[[--
+   Do click at point
+   @return non nil/false if click was consumed, nil/false otherwise
+]]
+function Flex.click(pt, views, rects)
+   return Flex.objectAtPoint(pt, views, rects, Flex.doClick)
+end
+
+--[[--
+   Apply a function to a view at a point
+   @return result of calling fn on view at point
+]]
+function Flex.objectAtPoint(pt, views, rects, fn)
+   for i = 1, views.n do
+      local child = views[i]
+      local rect = rects[i]
+      if child and Flex.isInBound(pt, rect) then
+		 if child.children then
+			local result = Flex.objectAtPoint(pt, child.children, rect.children, fn)
+			if result then
+			   return result
+			end
+		 end
+		 return fn(child, pt)
+      end
+   end
+end
+
+--[[--
+   Get all named members of views
+   @return dict of {name=view...}
+]]
+function Flex.getNamed(views)
+   return Flex._getNamed(views, {})
+end
+
+--[[
+   Helper. Get all named members of views
+   @return dict of {name=view...}
+]]
+function Flex._getNamed(views, named)
+   local len = views.n or #views
+   for i = 1, len do
+      local child = views[i]
+      if child then
+		 if child.name then
+			named[child.name] = child
+		 end
+		 if child.children then
+			Flex._getNamed(child.children, named)
+		 end
+      end
+   end
+   return named
+end
+
+--[[--
+   Draw the views
+]]
+function Flex.draw(views)
+   for i = 1, views.n do
+      local child = views[i]
+      if child then
+		 views[i]:draw(0, 0)
+		 if child.children then
+			Flex.draw(child.children)
+		 end
+      end
+   end
+end
+
+--[[--
+   destroy the views
+]]
+function Flex.destroy(views)
+   for i = 1, views.n do
+      local child = views[i]
+      if child then
+		 views[i]:destroy()
+		 if child.children then
+			Flex.destroy(child.children)
+		 end
+      end
+   end
+end
+
+--[[--
+   Handles the common scenario of mouse wheel
+   @param M module or object doing the clicking
+   @param x coord
+   @param y coord
+   @param dx scroll dx
+   @param dx scroll dy
+]]
+function Flex.mouseWheel(M, x, y, dx, dy)
+   local draggable = Flex.getDraggable({x, y}, M.views, M.rects)
+   if draggable then
+      if dx < 0 then
+	 dx = -10
+      elseif dx > 0 then
+	 dx = 10
+      end
+      if dy < 0 then
+	 dy = -10
+      elseif dy > 0 then
+	 dy = 10
+      end
+      draggable:moveBy(dx, dy)
+   end
+   
+   return draggable
+end
+
+--[[--
+   Handles the common scenario of clicking / dragging mouse down
+   @param M module or object doing the clicking
+   @param x coord
+   @param y coord
+]]
+function Flex.mouseDown(M, x, y)
+   M.draggable = Flex.getDraggable({x, y}, M.views, M.rects)
+   M.last = {x, y}
+   M.dragging = false
+end
+
+--[[--
+   Handles the common scenario of clicking / dragging mouse move
+   @param M module or object doing the clicking
+   @param x coord
+   @param y coord
+]]
+function Flex.mouseMove(M, x, y)
+   local last = M.last
+   if M.draggable then
+	  local dx = x - last[1]
+	  local dy = y - last[2]
+	  if M.dragging or math.abs(dx) > Flex.rDrag or math.abs(dy) > Flex.rDrag then
+		 M.draggable:moveBy(dx, dy)
+		 M.last = {x, y}
+		 M.dragging = true
+	  end
+   end
+end
+
+--[[--
+   Handles the common scenario of clicking / dragging mouse up
+   @param M module or object doing the clicking
+   @param x coord
+   @param y coord
+]]
+function Flex.mouseUp(M, x, y)
+   local result = true
+   if not M.dragging then
+	  result = Flex.click({x, y}, M.views, M.rects)
+   end
+   M.draggable = nil
+   M.dragging = false
+   M.last = nil
+   return result
+end
+
+--[[--
+   loads a file in the flex scope
+]]
+function Flex.load(fname)
+   return uloadfile(fname, "bt", Flex)
+end
+return 
+Flex = {}
+--[[
+{{1,"w"},{30,"dp"},children={}}
+]]
+function Flex.calculateRects(cell, rect)
+   local direction = cell.axis
+   local odirection = 1
+   if direction == 1 then
+      odirection = 2
+   else
+      direction = 2
+   end
+   local size = rect[direction + 2]
+   local osize = rect[odirection + 2]
+   local x = rect[direction]
+   local ox = rect[odirection]
+   
+   local flexible = size
+   local weight = 0
+   local children = cell.children
+   -- calculate how much room standard things take up
+   -- sum weights
+   for i, child in ipairs(children) do
+      local amount = child.size
+      if amount[2] == "dp" then -- density dependant pix
+	 flexible = flexible - amount[1]
+      elseif amount[2] == "sp" then -- scalable pix
+	 flexible = flexible - amount[1]
+      elseif amount[2] == "w" then --weight
+	 weight = weight + amount[1]
+      end
+   end
+   local rects = {}
+   --generate rects
+   for i, child in ipairs(children) do
+      local amount = child.size
+      local mass = 0
+      if amount[2] == "dp" then -- density dependant pix
+	 mass = amount[1]
+      elseif amount[2] == "sp" then -- scalable pix
+	 mass = amount[1]
+      elseif amount[2] == "w" and flexible >= 0 then --weight
+	 mass = math.ceil(amount[1] / weight * flexible)
+	 if mass > flexible then
+	    mass = flexible
+	 end
+	 flexible = flexible - mass
+	 weight = weight - amount[1]
+      end
+      if mass > size then
+	 mass = size
+      end
+      size = size - mass
+      rects[i] = Flex.makebox(direction, odirection, x, ox, mass, osize)
+      x = x + mass
+   end
+
+   --generate children rects
+   for i, child in ipairs(children) do
+      if child.children then
+	 rects[i].children = Flex.calculateRects(child, rects[i])
+      end
+   end
+
+   return rects
+end
+
+function Flex.makebox(direction, odirection, x, ox, size, osize)
+   local rect = {0, 0, 0, 0}
+   rect[direction] = x
+   rect[odirection] = ox
+   rect[direction + 2] = size
+   rect[odirection + 2] = osize
+   return rect
+end
+return {
+   axis=vertical,
+   children={
+      {axis=horizontal,
+       size={1,"w"},
+       children={
+	  {class=UIView,
+	   size={50,"dp"},
+	   color="ff00ff"},
+
+	  {class=UIView,
+	   name = "testing",
+	   size={1,"w"},
+	   color="00ff00"},
+
+	  {class=UIView,
+	   size={50,"dp"},
+	   color="ff00ff"},
+
+	  {class=UIView,
+	   size={1,"w"},
+	   color="ff0000"},
+
+	  {class=UIView,
+	   size={50,"dp"},
+	   color="ff00ff"},
+      }},
+
+      {class=UIView,
+       size={1,"w"},
+       color="0000ff"},
+   }
+}
+require("util")
 local isMain = Util.isMain()
+Flex = {}
+local F = Flex
+--[[
+{{1,"w"},{30,"dp"},children={}}
+]]
+function Flex.calculate(cell, size, direction)
+   local flexible = size
+   local weight = 0
+   -- calculate how much room standard things take up
+   -- sum weights
+   for i, child in ipairs(cell) do
+      local amount = child[direction]
+      if amount[2] == "dp" then -- density dependant pix
+	 flexible = flexible - amount[1]
+      elseif amount[2] == "sp" then -- scalable pix
+	 flexible = flexible - amount[1]
+      elseif amount[2] == "w" then --weight
+	 weight = weight + amount[1]
+      end
+   end
+   for i, child in ipairs(cell) do
+      local amount = child[direction]
+      local mass = 0
+      if amount[2] == "dp" then -- density dependant pix
+	 mass = amount[1]
+      elseif amount[2] == "sp" then -- scalable pix
+	 mass = amount[1]
+      elseif amount[2] == "w" and flexible >= 0 then --weight
+	 mass = math.ceil(amount[1] / weight * flexible)
+	 if mass > flexible then
+	    mass = flexible
+	 end
+	 flexible = flexible - mass
+	 weight = weight - mass
+      end
+      if mass > size then
+	 mass = size
+      end
+      size = size - mass
+   end
+end
+
+function Flex.Start()
+   
+end
+
+function Flex.Update()
+   Update=static.quit()
+end
+
+function Flex.End()
+   
+end
+
+Util.try(isMain, F)
+require("util")
+Util.isMain()
+
+UITextBox = Class()
+Flex.UITextBox = UITextBox
 
 --[[
-   Draws an image with a colored background
+   A textbox that works with flex.
 
-   Demo of what surfaces can do
+   complies with flex constructor.
 ]]
-function Start()
-   print("hi")
-   s = Surface.new("images/headsprites.png")
-   w,h = Surface.size(s)
-   s2 = Surface.newBlank(w, h)
-   Surface.fill(s2, 56,56,56,56
-				,250,250,0,255)
-   Surface.fill(s2, 56 * 2,0,56,56
-				,0,200,200,255)
-   Surface.blit(s2, s, 0, 0)
-   t = Surface.textureFrom(s)
-   t2 = Surface.textureFrom(s2)
-   spr = Sprite.new(t, 0,0,w,h,0,0)
-   spr2 = Sprite.new(t2, 0,0,w,h,0,0)
-   sprs = {spr, spr2}
-   ts = {t, t2}
-   Surface.destroy(s2)
+function UITextBox.new(cell, rect)
+   local self = {}
+   if cell.name then
+	  self.name = cell.name
+   end
+   setmetatable(self, UITextBox)
+   self:setProps(cell)
+
+   -- rect not set, won't resize
+   self:setText(cell.text)
+   
+   -- rect set (can now resize)
+   self.rect = rect
+   if self.rect then
+	  self:setRect(self.rect)
+   end
+   return self
+end
+
+--[[
+   set all textbox properties
+
+   @param data
+   @param data.fg foreground (text) color
+   @param data.bg background color
+   @param data.j justification
+]]
+function UITextBox:setProps(data)
+   if not data then
+	  data = {}
+   end
+   local fg = data.fg and {parseColor(data.fg)}
+   local bg = data.bg and {parseColor(data.bg)}
+   
+   self.j = data.justify or self.j or 1
+   self.fg = fg or self.fg or {255,255,255,255}
+   self.bg = bg or self.bg or {0,0,0,0}
+   self.direction = data.direction or self.direction
+end
+
+
+--[[--
+   set boy's text
+
+   @param text 
+   @param start 
+]]
+function UITextBox:setText(text, start)
+   self.text = text
+   self:setStart(start)
+end
+
+--[[--
+   set start position (doesn't do much yet? I forget)
+
+   @param start 
+]]
+function UITextBox:setStart(start)
+   self.start = start or 1
+   if self.rect then
+	  self:setRect(self.rect)
+   end
+end
+
+--[[
+   go to next unseen bit of text
+   
+   @return bool whether has shown all text already
+]]
+function UITextBox:next()
+   local text = self.text
+   self:setStart(self.start + self.displaying)
+   local ltext = #text
+   if self.start > ltext then
+	  self.start = ltext + 1
+   end
+   return self.start > ltext
+end
+
+--[[
+   set the boy's text
+]]
+function UITextBox:setRect(rect)
+   self.rect = rect
+   local r = self.rect
+   self:destroy()
+   if r[3] > 0 and r[4] > 0 then
+	  local r = self.rect
+	  local text = self.text
+	  if self.start > #text then
+		 text = ""
+	  elseif self.start ~= 1 then
+		 text = string.sub(text, self.start)
+	  end
+	  if self.direction == 2 then
+		 local len, h = Text.charsInTextbox(
+			self.text,
+			r[3],
+			r[4],
+			2)
+		 text = string.sub(text, #text - len + 1, -1)
+	  end
+	  local s, l, h = Text.textbox(
+		 text,
+		 self.j,
+		 r[3],
+		 r[4],
+		 self.fg,
+		 1)
+	  self.displaying = l
+	  local bg = self.bg or {255,128,128,255}
+	  local s2 = Surface.newBlank(r[3], r[4])
+	  Surface.fill(s2, 0, 0, r[3], r[4], bg[1], bg[2], bg[3], bg[4])
+	  Surface.blit(s2, s, 0, 0)
+	  self.tex = Surface.textureFrom(s2)
+	  self.spr = Sprite.new(self.tex, r[1], r[2], r[3], r[4], 0, 0) -- sprite
+	  Surface.destroy(s)
+	  Surface.destroy(s2)
+   end
+end
+
+--[[
+   set the boy's data. don't use tbh
+]]
+function UITextBox:setData(data)
+   self:setText(data.text, data.start)
+end
+
+--[[
+   draw the boy
+]]
+function UITextBox:draw()
+   if self.spr then
+	  self.spr:draw(0,0)
+   end
+end
+
+--[[
+   destroy the boy
+]]
+function UITextBox:destroy()
+   if self.spr then
+	  self.spr:destroy()
+	  self.spr = nil
+   end
+   if self.tex then
+	  Texture.destroy(self.tex)
+	  self.tex = nil
+   end
+end
+require("util")
+require("tiled/tilesets")
+Util.isMain()
+
+UIButton = Class()
+function UIButton.new(cell, rect)
+   local self = {rect=rect}
+   self.color = cell.color
+   setmetatable(self, UIButton)
+   return self
+end
+
+function UIButton:setRect(rect)
+   self.rect = rect
+   local r = self.rect
+   local s = Surface.newBlank(r[3], r[4])
+   Surface.fill(s, 0, 0, r[3], r[4], parseColor(self.color)) 
+   self.t = Surface.textureFrom(s)
    Surface.destroy(s)
-   static.framedelay(1000//30)
+end
+
+function UIButton:setData(data)
+   self:setRect(self.rect)
+end
+
+function UIButton:draw()
+   local r = self.rect
+   Texture.renderCopy(self.t, 0, 0, r[3], r[4], r[1], r[2], r[3], r[4])
+end
+
+function UIButton:destroy()
+   if self.t then
+      Texture.destroy(self.t)
+   end
+end
+require("util")
+local isMain = Util.isMain()
+require("data/save")
+require("flex/flex")
+local F = Flex
+
+function Flex.Start()
+   cells = dofile("flex/test.layout.lua")
+   rects = Flex.calculateRects(cells, {0,0,SCREEN_WIDTH,SCREEN_HEIGHT})
+   things = Flex.new(cells, rects)
+   Flex.setData(things, nil)
+end
+
+function Flex.Update()
+   --Update=static.quit()
+   Flex.draw(things)
+end
+
+function Flex.Resize(w, h)
+   Util.Resize(w,h)
+   rects = Flex.calculateRects(cells, {0,0,SCREEN_WIDTH,SCREEN_HEIGHT})
+   Flex.setRects(things, rects)
+end
+
+function Flex.End()
+   Flex.destroy(things)
+end
+
+Util.try(isMain, F)
+require("util")
+local isMain = Util.isMain()
+require("data/save")
+require("flex/flex")
+local F = Flex
+
+function Flex.Start()
+   cells = dofile("flex/test.layout.lua")
+   rects = Flex.calculateRects(cells, {0,0,SCREEN_WIDTH,SCREEN_HEIGHT})
+   things = Flex.new(cells, rects)
+   --Flex.setData(things, nil)
+   print(table.tostring(Flex.getNamed(things)))
+end
+
+function Flex.End()
+   Flex.destroy(things)
+end
+
+Util.try(isMain, F)
+require("util")
+Util.isMain()
+
+UIButton = Class()
+Flex.UIButton = UIButton
+
+--[[
+   Create a button, conforms to flex constructor
+]]
+function UIButton.new(cell, rect)
+   local self = {rect=rect,text=cell.text}
+   UIView.setBackground(self, cell)
+   self.context = cell.context
+   if cell.name then
+	  self.name = cell.name
+   end
+   setmetatable(self, UIButton)
+   if self.rect then
+	  self:setRect(self.rect)
+   end
+   return self
 end
 
 --[[
-   draw shit
+   set the button's rect
 ]]
-function Update()
-   --Update = static.quit
-   for i, spr in ipairs(sprs) do
-	  spr:draw(0,h * (i - 1))
+function UIButton:setRect(rect)
+   self.rect = rect
+   local r = self.rect
+   self:destroy()
+   if r[3] > 0 and r[4] > 0 then
+      local s = UIView.makeBackground(self, rect)
+	  if self.text and #self.text > 0 then
+		 local text, l, h = Text.textbox(self.text, 2, r[3], r[4], {255,255,255,255})
+		 Surface.blit(s, text, 0, (r[4] - h) // 2)
+		 Surface.destroy(text)
+	  end
+      self.t = Surface.textureFrom(s)
+      Surface.destroy(s)
    end
 end
 
 --[[
-   destroy shit
+   set the button's data
 ]]
-function End()
-   for i, t in ipairs(ts) do
-	  Texture.destroy(t)
+function UIButton:setData(data)
+   UIView.setBackground(self, data)
+   self.text = data.text
+   self.fn = data.click -- click fn
+   if self.rect then
+	  self:setRect(self.rect)
    end
-   for i, spr in ipairs(sprs) do
-	  spr:destroy()
-   end
-   print("goodbye")
 end
 
---purely a test class, so I used globals and then just told Util to pull off the global env instead of a class
-Util.try(isMain, _G)
+--[[
+   click the button, respecting the desired context
+]]
+function UIButton:click(pt)
+   if self.fn then
+	  return self.fn(self.context, pt, self)
+   end
+end
+
+--[[
+   draw the button
+]]
+function UIButton:draw(x, y)
+   if self.t then
+      local r = self.rect
+      Texture.renderCopy(self.t, 0, 0, r[3], r[4], r[1] + x, r[2] + y, r[3], r[4])
+   end
+end
+
+--[[
+   destroy the boy
+]]
+function UIButton:destroy()
+   if self.t then
+      Texture.destroy(self.t)
+      self.t = nil
+   end
+end
+return {
+   load="flex/test-static.lua",
+   doInitSDL=false
+}
+require("util")
+require("tiled/tilesets")
+Util.isMain()
+
+UIView = Class()
+Flex.UIView = UIView
+
+--[[
+   basic view for flex
+]]
+function UIView:makeBackground(rect)
+   if self.color then
+      local r = rect
+      local s = Surface.newBlank(r[3], r[4])
+      Surface.fill(s, 0, 0, r[3], r[4], parseColor(self.color))
+      return s
+   end
+end
+
+function UIView:setBackground(src)
+   if not src then
+      return
+   end
+   if src.color then
+      self.color = src.color
+   end
+end
+
+function UIView.new(cell, rect)
+   local self = {rect=rect}
+   setmetatable(self, UIView)
+   if cell.name then
+	  self.name = cell.name
+   end
+   self:setBackground(cell)
+   return self
+end
+
+function UIView:setRect(rect)
+   local r = rect
+   self.rect = rect
+   self:destroy()
+   if r[3] > 0 and r[4] > 0 then
+      local s = self:makeBackground(rect)
+      self.t = Surface.textureFrom(s)
+      Surface.destroy(s)
+   end
+end
+
+function UIView:setData(data)
+   self:setBackground(data)
+   self:setRect(self.rect)
+end
+
+function UIView:draw()
+   if self.t then
+      local r = self.rect
+      Texture.renderCopy(self.t, 0, 0, r[3], r[4], r[1], r[2], r[3], r[4])
+   end
+end
+
+function UIView:destroy()
+   if self.t then
+      Texture.destroy(self.t)
+      self.t = nil
+   end
+end
+require("util")
+Util.isMain()
+
+UIList = Class()
+Flex.UIList = UIList
+
+--[[
+   create a list, conforms to flex constructor
+]]
+function UIList.new(cell, rect)
+   local self = {
+	  rect = rect,
+	  draggable = (cell.axis ~= nil),
+	  delta = {0, 0},
+	  axis = cell.axis,
+   }
+   UIView.setBackground(self, cell)
+   if cell.name then
+	  self.name = cell.name
+   end
+   setmetatable(self, UIList)
+   return self
+end
+
+--[[
+   set the list's data
+   @param cells layout
+   @param children already init'd views
+]]
+function UIList:setData(cells, children)
+   self:destroy()
+   self.cells = cells
+    -- avoid sub-calls to children by different name
+   self.c = children
+   self:setRect(self.rect)
+end
+
+--[[
+   set the boy's rect
+]]
+function UIList:setRect(rect)
+   self.rect = rect
+   if self.cells and self.c then
+	  local cell = {
+		 axis=vertical,
+		 children = self.cells,
+	  }
+	  self.rects = Flex.calculateRects(cell, self.rect, true)
+	  Flex.setRects(self.c, self.rects)
+	  if self.draggable then
+		 local height = 0
+		 local a = self.axis
+		 for i,v in ipairs(self.rects) do
+			height = height + v[a + 2]
+		 end
+		 self.height = height
+	  end
+   end
+end
+
+--[[
+   set the list's drag to dx, dy
+]]
+function UIList:moveTo(dx, dy)
+   self.delta = {0, 0}
+   self:moveBy(dx, dy)
+end
+
+--[[
+   drag the list by dx, dy
+   @param dx delta x
+   @param dy delta y
+]]
+function UIList:moveBy(dx, dy)
+   local d = {dx, dy}
+   local a = self.axis
+   local sd = self.delta
+   sd[a] = sd[a] + d[a]
+   local diff = self.height - self.rect[a + 2]
+   if sd[a] < -diff then
+	  sd[a] = -diff
+   end
+   if sd[a] > 0 then
+	  sd[a] = 0
+   end
+end
+
+--[[
+   click the boy
+]]
+function UIList:click(pt)
+   local d = self.delta
+   pt = {pt[1] - d[1], pt[2] - d[2]}
+   return Flex.click(pt, self.c, self.rects)
+end
+
+--[[
+   draw the boy
+]]
+function UIList:draw()
+   local r = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}
+   local rs = self.rect
+   static.setRenderClip(rs[1], rs[2], rs[3], rs[4])
+   local x = self.delta[1]
+   local y = self.delta[2]
+   local v = self.c
+   for i = 1,v.n do
+	  if v[i] then
+		 v[i]:draw(x, y)
+	  end
+   end
+   rs = r
+   static.setRenderClip(rs[1], rs[2], rs[3], rs[4])
+end
+
+--[[
+   destroy the boy
+]]
+function UIList:destroy()
+   if self.c then
+	  Flex.destroy(self.c)
+   end
+   self.rects = nil
+   self.cells = nil
+end
+
+require("util")
+require("tiled/tilesets")
+Util.isMain()
+
+UIView = Class()
+function UIView.new(cell, rect)
+   local self = {rect=rect}
+   setmetatable(self, UIView)
+   return self
+end
+
+function UIView:setData(cell, data)
+   local r = self.rect
+   local s = Surface.newBlank(r[3], r[4])
+   Surface.fill(s, 0, 0, r[3], r[4], parseColor(cell.color)) 
+   self.t = Surface.textureFrom(s)
+   Surface.destroy(s)
+end
+
+function UIView:draw()
+   local r = self.rect
+   Texture.renderCopy(self.t, 0, 0, r[3], r[4], r[1], r[2], r[3], r[4])
+end
+
+function UIView:destroy()
+   if self.t then
+      Texture.destroy(self.t)
+   end
+end
+return {
+   load="load.lua",
+   doInitSDL=false
+}
+return {
+   axis=horizontal,
+   children={
+
+   }
+}
+--[[
+   An image scaler that uses flex to decide the origin and destination rects.
+
+   Usable for 9-slice or more interesting things like 11/13 slice
+]]
+--[[
+   An image scaler that uses flex to decide the origin and destination rects.
+]]
 return {"Text.lua"}Text = {}
 
 --[[--
@@ -836,7 +1962,7 @@ end
 function Segment:print()
    print(self.slug.name, self.pos[1], self.pos[2])
 end
-return {
+return {"Skills.lua","segment.lua","slug.lua","slugdefs.lua"}return {
    tilesets={
       {
 	 name = "heads",
@@ -1211,7 +2337,7 @@ end
 function Spawn.act(initiator, object, ind, x, y)
    return false
 end
-return {"Skills.lua","segment.lua","slug.lua","slugdefs.lua"}require("util")
+require("util")
 require("tiled/tilesets")
 -- slugdefs tells us information about slug types
 -- such as where the head/body images are stored
@@ -1693,7 +2819,7 @@ function PlayerModel:destroy()
    self.money = nil
    self.data = nil
 end
-require("util")
+return {"player.lua","var.lua"}require("util")
 
 ModelVar = Class()
 
@@ -1773,6 +2899,10 @@ function ModelVar:set(value)
       self.listener:set(value)
    end
 end
+return {"load.lua"}return {
+   load="viewer/load.lua",
+   doInitSDL=true,
+}
 require("util")
 local isMain = Util.isMain()
 require("text/Text")
@@ -1791,9 +2921,7 @@ function Viewer.readAll(dir, sep)
    local texts = {}
    local sources = listdir(dir)
    for i, source in ipairs(sources) do
-	  local f = io.open(dir..source, "r")
-	  texts[i] = f:read("a")
-	  f:close()
+      texts[i] = static.readfile(dir..source)
    end
    return table.concat(texts, sep)
 end
@@ -1807,7 +2935,7 @@ end
 ]]
 function Viewer.Start(argc, argv)
    if argc < 3 then	
-	  argv = {"viewer/load", "licenses/", "\n\n"}
+      argv = {"viewer/load", "licenses/", "\n\n"}
    end
    V.stext = V.readAll(argv[2], argv[3])
    V.reset()
@@ -1837,10 +2965,10 @@ function Viewer.reset()
    local i = 1
    local l = Text.charsInTextbox(text, SCREEN_WIDTH, SCREEN_HEIGHT)
    while l > 0 do
-	  V.texts[i] = string.sub(text,1,l)
-	  text = string.sub(text,l + 1)
-	  i = i + 1
-	  l = Text.charsInTextbox(text, SCREEN_WIDTH, SCREEN_HEIGHT)
+      V.texts[i] = string.sub(text,1,l)
+      text = string.sub(text,l + 1)
+      i = i + 1
+      l = Text.charsInTextbox(text, SCREEN_WIDTH, SCREEN_HEIGHT)
    end
    V.updateForPage(1)
 end
@@ -1850,11 +2978,11 @@ end
 ]]
 function Viewer.free()
    if V.tex then
-	  Texture.destroy(V.tex)
+      Texture.destroy(V.tex)
    end
    V.tex = nil
    if V.spr then
-	  V.spr:destroy()
+      V.spr:destroy()
    end
    V.spr = nil
 end
@@ -1866,7 +2994,7 @@ end
 ]]
 function Viewer.updateForPage(p)
    if V.texts[p] == nil then
-	  return
+      return
    end
    V.free()
    V.page = p
@@ -1877,7 +3005,7 @@ function Viewer.updateForPage(p)
 end
 
 --[[
-   draw shit
+   draw things
 ]]
 function Viewer.Update()
    --Update = static.quit
@@ -1885,11 +3013,19 @@ function Viewer.Update()
 end
 
 --[[
-   destroy shit
+   destroy things
 ]]
 function Viewer.End()
    V.free()
    V.stext = nil
+end
+
+function Viewer.MouseDown(x,y)
+   if x > SCREEN_WIDTH/2 then
+      V.updateForPage(V.page + 1)
+   else
+      V.updateForPage(V.page - 1)
+   end
 end
 
 --[[
@@ -1899,20 +3035,24 @@ end
 ]]
 function Viewer.KeyDown(key)
    if key == KEY_ESCAPE then
-	  static.quit()
+      static.quit()
    elseif key == KEY_UP then
-	  V.updateForPage(V.page - 1)
+      V.updateForPage(V.page - 1)
    elseif key == KEY_DOWN then
-	  V.updateForPage(V.page + 1)
+      V.updateForPage(V.page + 1)
    elseif key == KEY_LEFT then
-	  V.updateForPage(V.page - 1)
+      V.updateForPage(V.page - 1)
    elseif key == KEY_RIGHT then
-	  V.updateForPage(V.page + 1)
+      V.updateForPage(V.page + 1)
    end
 end
 
 Util.try(isMain, V)
-return {"load.lua"}require("util")
+return {"load.lua"}return {
+   load="level-select/load.lua",
+   doInitSDL=true,
+}
+require("util")
 local isMain = Util.isMain()
 require("text/Text")
 require("ui/Button")
@@ -1942,6 +3082,41 @@ function MapSelect.destroyButtons()
 	  b:destroy()
    end
    M.buttons = {}
+end
+
+function MapSelect.layout()
+   local class = UIView
+   local rows, cols = 4, 4
+
+   local space = {size={10, "dp"}}
+   local childRow = {}
+   local key = 1
+   for i = 1, 2 * rows, 2 do
+      local childCol = {}
+      for j = 1, 2 * cols, 2 do
+	 childCol[j] = space
+	 childCol[j + 1] = {class=class,
+			    size={1,"w"},
+			    color="ff00ff",
+			    key=key}
+	 key = key + 1
+      end
+      childCol[2 * cols + 1] = space
+      childRow[i] = space
+      childRow[i + 1] = {axis=vertical,
+			 size={1,"w"},
+			 children=childCol}
+   end
+   childRow[2 * rows + 1] = space
+   
+   return {
+      axis=vertical,
+      children={
+	 {axis=horizontal,
+	  size={1,"w"},
+	  children=childRow}
+      }
+   }
 end
 
 --[[--
@@ -2036,7 +3211,7 @@ function MapSelect.Update(t, ticks)
 end
 
 --[[
-   destroy shit
+   destroy things
 ]]
 function MapSelect.End()
    M.destroyButtons()
@@ -2058,7 +3233,7 @@ function MapSelect.MouseDown(x,y)
 end
 
 Util.try(isMain, M)
-return {"load.lua"}require("util")
+require("util")
 
 Collectable = Class()
 local C = Collectable
@@ -2133,56 +3308,56 @@ function Collectable.despawn()
    C.sheet = nil
    C.items = nil
 end
-require("util")
+return {"collectable.lua","goal-object.lua","load.lua","map.lua","overlay.lua","selection-mode.lua","ui.lua"}require("util")
 require("ai/ai")
 SlugSelect = {}
 local S = SlugSelect
 
 --[[--
-callback gen, set active choice to slug.
+   callback gen, set active choice to slug.
 
-should probably update textbox text
+   should probably update textbox text
 
-@param i index into choice
-@param slugs slugs
+   @param i index into choice
+   @param slugs slugs
 
-@return callback
+   @return callback
 ]]
 function SlugSelect.fn(i, slugs)
    return function()
-	  S.choice = slugs[i]
+      S.choice = slugs[i]
    end
 end
 
 --[[--
-Set up buttons so one can choose which slug to place.
+   Set up buttons so one can choose which slug to place.
 
-Should include pagination.
+   Should include pagination.
 ]]
 function SlugSelect.setUI()
    local slugs = S.inv.slugs
    local fns = {}
    local texts = {}
    for i = 1,#slugs do
-	  table.insert(fns, S.fn(i, slugs))
-	  table.insert(texts, slugs[i].type)
+      table.insert(fns, S.fn(i, slugs))
+      table.insert(texts, slugs[i].type)
    end
    table.insert(texts,"done")
    table.insert(fns, S.Finish)
-   BattleUI.t:setText("Click a slug type, then click a spawn-spot to set the slug!")
-   BattleUI.actions:setButtons(fns,texts)
-   BattleUI.t:resize()
+   BattleUI.named.info:setData({text="Click a slug type, then click a spawn-spot to set the slug!"})
+   BattleUI.setButtons(fns,texts)
+   --BattleUI.t:resize()
 end
 
 --[[--
-Sets self as controller, takes some functions from Battle
-Loads possible slug choices for use
+   Sets self as controller, takes some functions from Battle
+   Loads possible slug choices for use
 
-@param inv Player's inventory
+   @param inv Player's inventory
 ]]
 function SlugSelect.Begin(inv)
    for i,v in pairs({"Resize", "Start", "End"}) do
-	  S[v] = Battle[v]
+      S[v] = Battle[v]
    end
 
    Util.setController(S)
@@ -2193,23 +3368,23 @@ function SlugSelect.Begin(inv)
    S.choices = {}
    
    for i,m in ipairs(S.mates) do
-	  S.imates[map:indexOf(m.pos[1], m.pos[2])] = true
+      S.imates[map:indexOf(m.pos[1], m.pos[2])] = true
    end
 
    S.setUI()
 end
 
 --[[--
-cleans up memory, hands control back to Battle
+   cleans up memory, hands control back to Battle
 ]]
 function SlugSelect.Finish()
    local spawners = slugs["spawner"]
    if spawners then
-	  spawners:damage(spawners.size)
+      spawners:damage(spawners.size)
    end
    for i,c in ipairs(S.choices) do
-	  local name = "spawned-"..i
-	  slugs[name] = Slug.new({sprites = c[3].type, segs = {{c[1],c[2]}}, name=name, team=1, spawner = false})
+      local name = "spawned-"..i
+      slugs[name] = Slug.new({sprites = c[3].type, segs = {{c[1],c[2]}}, name=name, team=1, spawner = false})
    end
    S.inv = nil
    S.choice = nil
@@ -2221,36 +3396,27 @@ function SlugSelect.Finish()
 end
 
 --[[--
-   draw shit, update map
+   draw things, update map
 ]]
 function SlugSelect.Update()
    --Update = static.quit
    map:update()
    map:draw()
    for i,v in ipairs(S.choices) do
-	  local x,y,s = v[1],v[2],v[3].type
-	  local t = Slug.defs[s].tiles[1]
-	  x, y = Map.basePosition(x, y)
-	  Texture.renderCopy(t.tex,
-						 t.x,t.y,t.w,t.h,
-						 x + map.x,
-						 y + map.y,
-						 map.tilesize,
-						 map.tilesize)
+      local x,y,s = v[1],v[2],v[3].type
+      local t = Slug.defs[s].tiles[1]
+      x, y = Map.basePosition(x, y)
+      Texture.renderCopy(t.tex,
+			 t.x,t.y,t.w,t.h,
+			 x + map.x,
+			 y + map.y,
+			 map.tilesize,
+			 map.tilesize)
    end
    BattleUI.draw()
 end
 
---[[--
-either click buttons, or try and place a slug
-
-@param x 
-@param y 
-]]
-function SlugSelect.MouseDown(x,y)
-   if BattleUI.MouseDown(x,y) then
-      return
-   end
+function SlugSelect.PlaceSlug(x, y)
    local px, py = Map.positionToCoords(x,y)	  
    if map:valid(px, py) then
       local ind = map:indexOf(px, py)
@@ -2268,41 +3434,66 @@ function SlugSelect.MouseDown(x,y)
    end
 end
 
+function SlugSelect.MouseWheel(x,y,dx,dy)
+   BattleUI.MouseWheel(x, y, dx, dy)
+end
+
+--[[--
+   either click buttons, or try and place a slug
+
+   @param x 
+   @param y 
+]]
+function SlugSelect.MouseDown(x,y)
+   BattleUI.MouseDown(x,y)
+end
+
+function SlugSelect.MouseMove(x, y)
+   BattleUI.MouseMove(x, y)
+end
+
+function SlugSelect.MouseUp(x, y)
+   if BattleUI.MouseUp(x, y) then
+      return
+   end
+   SlugSelect.PlaceSlug(x, y)
+end
+
 --[[--
    pan camera about map or quit
 
-@param key 
+   @param key 
 ]]
 function SlugSelect.KeyDown(key)
    if key == KEY_ESCAPE then
-	  static.quit()
+      static.quit()
    elseif key == KEY_UP then
-	  map.dy = -map.speed
+      map.dy = -map.speed
    elseif key == KEY_DOWN then
-	  map.dy = map.speed
+      map.dy = map.speed
    elseif key == KEY_LEFT then
-	  map.dx = -map.speed
+      map.dx = -map.speed
    elseif key == KEY_RIGHT then
-	  map.dx = map.speed
+      map.dx = map.speed
    end
 end
 
 --[[--
-Stop panning or quit
+   Stop panning or quit
 
-@param key 
+   @param key 
 ]]
 function SlugSelect.KeyUp(key)
    if key == KEY_ESCAPE then
-	  static.quit()
+      static.quit()
    elseif key == KEY_UP and map.dy < 0 then
-	  map.dy = 0
+      map.dy = 0
    elseif key == KEY_DOWN and map.dy > 0 then
-	  map.dy = 0
+      map.dy = 0
    elseif key == KEY_LEFT and map.dx < 0 then
-	  map.dx = 0
+      map.dx = 0
    elseif key == KEY_RIGHT and map.dx > 0 then
-	  map.dx = 0
+      map.dx = 0
    end
 end
 require("util")
@@ -2488,6 +3679,11 @@ function Map:mousedown(x,y)
    end
 end
 
+function Map:moveBy(x, y)
+   self.x = self.x + x
+   self.y = self.y + y
+end
+
 -- draw map to screen
 function Map:draw()
    local i = 1
@@ -2571,29 +3767,22 @@ require("util")
 require("ui/ListButton")
 require("ui/TextBox")
 require("money/ui")
-BattleUI = {}
+BattleUI = {bHeight=30, bSpace=10}
 local B = BattleUI
 
 --[[--
    Makes the list button and text box that is gonna be displaying the slug's stats
 ]]
 function BattleUI.init()
-   B.actions = ListButton.new(
-      "actions",
-      {},
-      {},
-      30, 10, 3)
-   B.scene = {{s="screen",c={
-		  {s="money", n="money"},
-		  {s="actionsPanel", c={B.actions.container}}
-	     }}}
-   B.named, B.scene = UIElement.getNamed(
-      B.scene, getStyles({"screen", "money", "list-button", "battle-ui"}))
-   B.actions:init(B.named)
-   B.actions.child.e = {bg={0,0,0,128}}
-   B.t = TextBox.new({text="testing testing 123", layout=B.actions.child})
-   B.money = MoneyUI.new(B.named)
-   player.money:listen(B.money)
+   B.cells = Flex.load("battle/layout.lua")
+   local named = Flex.getNamed(B.cells.children)
+   named.actions.size[1] = ListButton.heightOf(3, B.bHeight, B.bSpace) + B.bSpace + B.bHeight // 2
+   B.rects = Flex.calculateRects(B.cells, {0,0,SCREEN_WIDTH,SCREEN_HEIGHT})
+   B.views = Flex.new(B.cells, B.rects)
+   B.named = Flex.getNamed(B.views)
+   BattleUI.setButtons({}, {})
+   local money = MoneyUI.new(B.named)
+   player.money:listen(money)
 end
 
 --[[--
@@ -2641,59 +3830,100 @@ function BattleUI.setSlug(slug)
       table.insert(texts, slug.stats.skills[i].skill)
    end
    B.slug = slug
-   B.t:setText(B.getSlugText(slug))
-   B.actions:setButtons(fns,texts)
-   B.t:resize()
+   B.setButtons(fns, texts)
+   B.named.info:setData({text=B.getSlugText(slug)})
+   --B.actions:setButtons(fns,texts)
+   --B.t:resize()
+end
+
+function BattleUI.setButtons(fns, texts, context)
+   ListButton.init(B.named.actions,
+				   fns,
+				   texts,
+				   B.bHeight, B.bSpace, context)
 end
 
 --[[--
-   resize shit
+   resize things
 ]]
 function BattleUI.resize()
-   UIElement.recalc(B.scene)
-   B.actions:resize()
-   B.t:resize()
-   B.money:resize()
+   B.rects = Flex.calculateRects(B.cells, {0,0,SCREEN_WIDTH,SCREEN_HEIGHT})
+   Flex.setRects(B.views, B.rects)
 end
 
 --[[--
-   draw shit
+   draw things
 ]]
 function BattleUI.draw()
-   B.actions:draw()
-   B.t:draw()
-   B.money:draw()
+   Flex.draw(B.views)
 end
 
 --[[--
-   destroy shit
+   destroy things
 ]]
 function BattleUI.destroy()
-   B.actions:destroy()
-   B.t:destroy()
-   B.money:destroy()
+   Flex.destroy(B.views)
    B.slug = nil
    B.scene = nil
    B.named = nil
-   B.actions = nil
-   B.t = nil
-   B.money = nil
+   B.views = nil
+   B.cells = nil
+   B.rects = nil
+   B.map = nil
+   B.draggable = nil
 end
 
---[[--
-   handle click
+--[[
+   standard Flex mouse down
 
    @param x 
    @param y 
-
-   @return true if click should be consumed. false otherwise
 ]]
-function BattleUI.MouseDown(x, y)
-   local b = B.actions:which(x,y)
-   if b then
-      return b:click()
+function BattleUI.MouseDown(x,y)
+   Flex.mouseDown(B, x, y)
+   if B.draggable then
+	  return true
    end
-   return false
+   B.draggable = B.map
+   return true
+end
+
+--[[
+   standard Flex mouse move
+
+   @param x 
+   @param y 
+]]
+function BattleUI.MouseMove(x,y)
+   Flex.mouseMove(B, x, y)
+end
+
+function BattleUI.MouseWheel(x,y,dx,dy)
+   if not Flex.mouseWheel(B, x, y, dx, dy) then
+      if dx < 0 then
+	 dx = -10
+      elseif dx > 0 then
+	 dx = 10
+      end
+      if dy < 0 then
+	 dy = -10
+      elseif dy > 0 then
+	 dy = 10
+      end
+      if B.map then
+	 B.map:moveBy(dx, dy)
+      end
+   end
+end
+
+--[[
+   standard Flex mouse up
+
+   @param x 
+   @param y 
+]]
+function BattleUI.MouseUp(x,y)
+   return Flex.mouseUp(B, x, y)
 end
 require("util")
 require("battle/collectable")
@@ -2728,6 +3958,10 @@ end
 function GoalObject:take(slug)
    Player.win()
 end
+return {
+   load="battle/load.lua",
+   doInitSDL=true,
+}
 return {
   name = "overlay",
   tilewidth = 56,
@@ -2823,12 +4057,13 @@ function Battle.Start(argc, argv)
    overlay:asTextures()
    overlay:loadTilesets()
    BattleUI.init()
+   BattleUI.map = map
    static.framedelay(framedelay)
    SlugSelect.Begin(dofile("data/static/inv.lua"))
 end
 
 --[[
-   resize shit
+   resize things
 
    @param w 
    @param h 
@@ -2841,7 +4076,7 @@ function Battle.Resize(w, h)
 end
 
 --[[--
-draw shit, update map
+draw things, update map
 ]]
 function Battle.Update()
    --Update = static.quit
@@ -2854,7 +4089,7 @@ function Battle.Update()
 end
 
 --[[
-destroy shit
+destroy things
 ]]
 function Battle.End()
    Tileset.destroyTilesets(overlay)
@@ -2911,6 +4146,10 @@ function Battle.KeyUp(key)
    end
 end
 
+function Battle.MouseWheel(x,y,dx,dy)
+   BattleUI.MouseWheel(x, y, dx, dy)
+end
+
 --[[
    Trigger movement/attack or whatever other action is currently active
 
@@ -2920,7 +4159,15 @@ end
 @return
 ]]
 function Battle.MouseDown(x, y)
-   if BattleUI.MouseDown(x,y) then
+   BattleUI.MouseDown(x,y)
+end
+
+function Battle.MouseMove(x, y)
+   BattleUI.MouseMove(x, y)
+end
+
+function Battle.MouseUp(x, y)
+   if BattleUI.MouseUp(x, y) then
 	  return
    end
    if active ~= nil then
@@ -2961,7 +4208,133 @@ end
 function C:addToMap()
    map.objects[map:indexOf(self.pos[1], self.pos[2])] = self
 end
-return {"collectable.lua","load.lua","map.lua","overlay.lua","selection-mode.lua","ui.lua"}    
+return {
+   axis=horizontal,
+   children={
+	  {size={200,"dp"},
+	   axis=vertical,
+	   children={
+		  {class=UIButton,
+		   name="info",
+		   text="testing",
+		   color="000000cc",
+		   size={1,"w"}},
+		  {class=UIList,
+		   axis = vertical,
+		   name = "actions",
+		   size={100,"dp"}}
+	   }},
+	  {size={1,"w"},
+	   axis=vertical,
+	   children={
+		  {class=UIButton,
+		   name="money",
+		   text="$yeet",
+		   color="00ff00",
+		   size={30,"sp"}},
+	  }},
+   }
+}
+require("util")
+local isMain = Util.isMain()
+require("ui/UIElement")
+require("ui/ListButton")
+require("level-select/load")
+require("viewer/load")
+require("world/load")
+require("dialogue/overlay")
+DragableTest = {}
+local D = DragableTest
+
+--[[
+   click button
+
+   @param x 
+   @param y 
+]]
+function DragableTest.MouseDown(x,y)
+   local d = D.dragables:which(x,y)
+   if d then
+      d:start(x,y)
+   end
+end
+
+--[[
+   resize
+
+   @param w 
+   @param h 
+]]
+function DragableTest.Resize(w,h)
+   Util.Resize(w,h)
+   UIElement.recalc(D.scene)
+   D.dragables:resize()
+end
+
+--[[--
+   Basic menu setup
+]]
+function DragableTest.Start()
+   D.scene = {{s="screen",c={{s="drag", d={i=0}},{s="drag", d={i=1}},{s="drag", d={i=2}}}}}
+   D.named, D.scene = UIElement.getNamed(
+      D.scene, getStyles({"test/drawables", "screen"}))
+   D.dragables:init(D.named)
+end
+
+--[[
+   draw shit
+]]
+function DragableTest.Update()
+   --Update=static.quit
+   D.dragables:draw()
+end
+
+--[[
+   destroy shit
+]]
+function DragableTest.End()
+   D.dragables:destroy()
+end
+
+Util.try(isMain, D)
+require("util")
+Draggable = Class()
+
+function Draggable.new(layout)
+   local self = {layout=layout}
+   setmetatable(self, Draggable)
+   self:resize()
+   return self
+end
+
+function Draggable:resize()
+   self:destroy()
+   self.rect = self.layout.rect()
+   local r = self.rect
+   self.s = Surface.newBlank(r[3], r[4])
+   Surface.fill(s2, r[1],r[2],r[3],r[4], self.layout.d.i*80,250,0,255)
+   self.t = Surface.textureFrom(self.s)
+end
+
+function Draggable:draw()
+   local r = self.rect
+   table.print(r)
+   Texture.renderCopy(self.t,0,0,r[3],r[4],r[1],r[2],r[3],r[4])
+end
+
+function Draggable:which(x,y)
+
+end
+
+function Draggable:destroy()
+   if self.s then
+      Surface.destroy(self.s)
+   end
+   if self.t then
+      Surface.destroy(self.t)
+   end
+end
+    
  Ä   OS/2h˙k   ¨   `cmapb¨Êe  Yƒ  ¨glyfŸ!—H  Ù  E∞headˇm™y  Nƒ   6hheaÇ  ∞   $hmtx    N¸  loca "D  J§   maxp ,  ‘    name˘Üf<  S  ©posthc¨í    § ˛ê              3 Ã           Ä  á   
         FSTR @  !"Ä     Ä  ˚    ÄÄ              f 3                      9:       	 
                         ! " # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z [ \ ] ^ _ ` a £ Ñ Ö Ω ñ Ë Ü é ã ù © § ä ⁄ É ì Ú Û ç ó à √ ﬁ Ò û ™ ı Ù ˆ ¢ ≠ … « Æ b c ê d À e »   œ Ã Õ Œ È f ” – — Ø g  ë ÷ ‘ ’ h Î Ì â j i k m l n † o q p r s u t v w Í x z y { } | ∏ °  ~ Ä Å Ï Ó ∫ ª	
@@ -2979,7 +4352,7 @@ D  
  JÀ  	  P  	  \e  	  z¡Created by total FontGeek, generated by FontStruct. Licensed under CC BY SAMozart NBPRegularFontStruct Pixel 01Mozart NBPVersion 1.0Pixel-01FontStruct is a trademark of FSI FontShop International GmbHhttp://fontstruct.comNate Halley‚ÄúPixel 01‚Äù was built with FontStruct
 http://www.fontshop.comhttp://fontstruct.com/fontstructions/show/924893Creative Commons Attribution Share Alikehttp://creativecommons.org/licenses/by-sa/3.0/Five big quacking zephyrs jolt my wax bed C r e a t e d   b y   t o t a l   F o n t G e e k ,   g e n e r a t e d   b y   F o n t S t r u c t .   L i c e n s e d   u n d e r   C C   B Y   S A M o z a r t   N B P R e g u l a r F o n t S t r u c t   P i x e l   0 1 M o z a r t   N B P V e r s i o n   1 . 0   ( 2 - J a n u a r y - 2 0 1 4 ) M o z a r t N B P F o n t S t r u c t   i s   a   t r a d e m a r k   o f   F S I   F o n t S h o p   I n t e r n a t i o n a l   G m b H h t t p : / / f o n t s t r u c t . c o m N a t e   H a l l e y M o z a r t   i s   p a r t   o f   t h e   N B P   C o l l e c t i o n . C r e a t i v e   C o m m o n s   A t t r i b u t i o n   S h a r e   A l i k e h t t p : / / c r e a t i v e c o m m o n s . o r g / l i c e n s e s / b y - s a / 3 . 0 / Q u i r k y   s p u d   b o y s   c a n   j a m   a f t e r   z a p p i n g   f i v e   w o r t h y   p o l y s i x e s .                  ‡    Í    ¬   (     ~ ¨ ˇoxuz~°©…     " & : ¨!"ˇˇ     ° Ænxtz~ë£±     " & 9 ¨!"ˇˇˇ„ˇ¡ˇ¿ˇR  ˝O    ˝6˝5˝.  ‡·      ‡                                       ¬ ≈ ∆ ¯  
                                                                            	 
-                        ! " # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z [ \ ] ^ _ ` a   Ñ Ö á â ë ñ ú ° † ¢ § £ • ß © ® ™ ´ ≠ ¨ Æ Ø ± ≥ ≤ ¥ ∂ µ ∫ π ª º  p c d h v ü n j t i   Ü ò   q     f u       Ó   k z ﬁ ¶ ∏  b m         l {   Ä É ï       ¯ ˝ ˛ ˘ ˙ ∑   ø ¬         w ˚ ˇ   Ç ä Å ã à ç é è å ì î   í ö õ ô       o       x        ¬   (     ~ ¨ ˇoxuz~°©…     " & : ¨!"ˇˇ     ° Ænxtz~ë£±     " & 9 ¨!"ˇˇˇ„ˇ¡ˇ¿ˇR  ˝O    ˝6˝5˝.  ‡·      ‡                                       ¬ ≈ ∆ ¯ MOZART NBP
+                        ! " # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z [ \ ] ^ _ ` a   Ñ Ö á â ë ñ ú ° † ¢ § £ • ß © ® ™ ´ ≠ ¨ Æ Ø ± ≥ ≤ ¥ ∂ µ ∫ π ª º  p c d h v ü n j t i   Ü ò   q     f u       Ó   k z ﬁ ¶ ∏  b m         l {   Ä É ï       ¯ ˝ ˛ ˘ ˙ ∑   ø ¬         w ˚ ˇ   Ç ä Å ã à ç é è å ì î   í ö õ ô       o       x        ¬   (     ~ ¨ ˇoxuz~°©…     " & : ¨!"ˇˇ     ° Ænxtz~ë£±     " & 9 ¨!"ˇˇˇ„ˇ¡ˇ¿ˇR  ˝O    ˝6˝5˝.  ‡·      ‡                                       ¬ ≈ ∆ ¯ return {"mozart.ttf","mozart_readme.txt"}MOZART NBP
 made by Nate Halley
 using FontStruct
 Version 1.0
@@ -3003,7 +4376,206 @@ Of course, you're not obligated by law to do this.... it's just a request from a
 Duty now for the future.
 
 Nate547 (total FontGeek)
-return {"mozart.ttf","mozart_readme.txt"}DUtil = {}
+require("util")
+local isMain = Util.isMain()
+
+--[[
+   Render to texture + glitch art.
+
+   Also a good demo of what textures can do currently
+]]
+function Start()
+   music, err = Music.new("test.ogg")
+   print(music, err)
+   paused = false
+   music:play(-1)
+   static.framedelay(1000)
+end
+
+--[[
+   draw some random colored copies
+]]
+function Update()
+   --Update = static.quit
+end
+
+--[[
+   destroy things
+]]
+function End()
+   music:destroy()
+end
+
+function KeyDown(k)
+   if k == KEY_ESCAPE then
+	  static.quit()
+   elseif k == KEY_SPACE then
+	  paused = not paused
+	  if paused then
+		 music:pause()
+	  else
+		 music:resume()
+	  end
+   end
+end
+
+--purely a test class, so I used globals and then just told Util to pull off the global env instead of a class
+Util.try(isMain, _G)
+return {
+   load="test/surface/surface-tests.lua",
+   doInitSDL=true,
+}
+require("util")
+local isMain = Util.isMain()
+
+--[[
+   Draws an image with a colored background
+
+   Demo of what surfaces can do
+]]
+function Start()
+   print("hi")
+   s = Surface.new("images/headsprites.png")
+   w,h = Surface.size(s)
+   s2 = Surface.newBlank(w, h)
+   Surface.fill(s2, 56,56,56,56
+				,250,250,0,255)
+   Surface.fill(s2, 56 * 2,0,56,56
+				,0,200,200,255)
+   Surface.blit(s2, s, 0, 0)
+   t = Surface.textureFrom(s)
+   t2 = Surface.textureFrom(s2)
+   spr = Sprite.new(t, 0,0,w,h,0,0)
+   spr2 = Sprite.new(t2, 0,0,w,h,0,0)
+   sprs = {spr, spr2}
+   ts = {t, t2}
+   Surface.destroy(s2)
+   Surface.destroy(s)
+   static.framedelay(1000//30)
+end
+
+--[[
+   draw things
+]]
+function Update()
+   --Update = static.quit
+   for i, spr in ipairs(sprs) do
+	  spr:draw(0,h * (i - 1))
+   end
+end
+
+--[[
+   destroy things
+]]
+function End()
+   for i, t in ipairs(ts) do
+	  Texture.destroy(t)
+   end
+   for i, spr in ipairs(sprs) do
+	  spr:destroy()
+   end
+   print("goodbye")
+end
+
+--purely a test class, so I used globals and then just told Util to pull off the global env instead of a class
+Util.try(isMain, _G)
+require("util")
+local isMain = Util.isMain()
+
+--[[
+   Render to texture + glitch art.
+
+   Also a good demo of what textures can do currently
+]]
+function Start()
+   t,w,h = Texture.new("images/headsprites.png")
+   static.renderBlendmode(BLENDMODE_BLEND);
+   tar = Texture.newTarget(SCREEN_WIDTH, SCREEN_HEIGHT)
+   Texture.blendmode(tar, BLENDMODE_BLEND)
+   Texture.blendmode(t, BLENDMODE_NONE)
+   static.setRenderTarget(tar)
+   static.renderClear()
+   for x = 0,SCREEN_WIDTH//w do
+	  for y = 0,SCREEN_WIDTH//h do
+		 Texture.renderCopy(t,0,0,w,h,x*w,y*h,w,h)
+	  end
+   end
+   static.unsetRenderTarget(tar)
+   static.framedelay(1000//60)
+end
+
+--[[
+   draw some random colored copies
+]]
+function Update()
+   local y = 20
+   Texture.setRGBMask(tar,255,255,255)
+   Texture.setAMask(tar,255)
+   Texture.renderCopy(tar,0,0,SCREEN_WIDTH, SCREEN_HEIGHT,0,0,SCREEN_WIDTH, SCREEN_HEIGHT)
+   makeGlitch(tar, {0,0,SCREEN_WIDTH, SCREEN_HEIGHT})
+   --Update = static.quit
+end
+
+--[[
+   destroy things
+]]
+function End()
+   Texture.destroy(t)
+   Texture.destroy(tar)
+end
+
+--[[
+   Render one colored copy of a portion of target texture to the screen
+
+   @param tar Texture to copy
+   @param r rect size of area to copy to
+]]
+function makeOneGlitch(tar, r)
+   local d={}
+   local e={}
+   local f = {}
+   local minw = 5
+   for i=1,2 do
+	  local w = r[i+2]
+	  d[i]=math.random(r[i],r[i]+w-5)
+	  e[i]=math.random(r[i],r[i]+w-5)
+
+	  d[i+2]=math.random(5,w-(d[i]-r[i]))
+   end
+   if math.random(1,100) > 20 then
+	  d[math.random(3,4)]=minw
+   end
+   for i =1,4 do
+	  f[i]=math.random(255,255)
+   end
+   for i=1,2 do
+	  f[math.random(1,3)]=0
+   end
+   --f[4] = 255
+   Texture.setRGBMask(tar,f[1],f[2],f[3])
+   Texture.setAMask(tar,f[4])
+   Texture.renderCopy(tar,d[1],d[2],d[3],d[4], e[1],e[2],d[3],d[4])
+end
+
+--[[
+   Render many colored copy of a portion of target texture to the screen
+
+   @param tar Texture to copy
+   @param r rect size of area to copy to
+]]
+function makeGlitch(tar, r)
+   for i = 1,20 do
+	  makeOneGlitch(tar, r)
+   end
+end
+
+--purely a test class, so I used globals and then just told Util to pull off the global env instead of a class
+Util.try(isMain, _G)
+return {
+   load="test/texture/texture-tests.lua",
+   doInitSDL=true,
+}
+DUtil = {}
 
 --[[
 Go to point
@@ -3041,12 +4613,12 @@ function DUtil.loadGlobalController(name)
 	  Start(0,{})
    end
 end
-require("util")
+return {"overlay.lua","story/","test-text.lua","util.lua"}require("util")
 local isMain = Util.isMain()
-require("ui/UIElement")
-require("ui/ListButton")
-require("ui/TextBox")
+require("flex/flex")
 Dialogue = Class()
+Dialogue.bHeight = 60
+Dialogue.bSpace = 10
 local D = Dialogue
 
 --[[--
@@ -3060,20 +4632,25 @@ local D = Dialogue
 ]]
 function Dialogue.new(dialogue, point)
    local self = New(D)
-   self.dialogue = dialogue
-   self.point = point
-   self.buttons = ListButton.new("dialogue",{self.next},{"Next"},60,10,3)
-   
-   local style = getStyles({"list-button", "screen"})
-   local named, scene = UIElement.getNamed(
-	  {{s="screen",c={self.buttons.container}}}, style)
-   self.buttons:init(named)
-   self.scene = scene
-   self.buttons.child.e = {}
-   self.textbox = TextBox.new({
-		 text=self:fetchText(),
-		 layout=self.buttons.child})
+   self.cells = Flex.load("dialogue/layout.lua")
+   local named = Flex.getNamed(self.cells.children)
+   named.actions.size[1] = ListButton.heightOf(3, self.bHeight, self.bSpace) + self.bSpace + self.bHeight // 2
+   self.rects = Flex.calculateRects(self.cells, {0,0,SCREEN_WIDTH,SCREEN_HEIGHT})
+   self.views = Flex.new(self.cells, self.rects)
+   self.named = Flex.getNamed(self.views)
+   self:setButtons({}, {})
+
+   self:go(dialogue, point)
    return self
+end
+
+function Dialogue:setButtons(fns, texts)
+   ListButton.init(self.named.actions,
+				   fns,
+				   texts,
+				   self.bHeight,
+				   self.bSpace,
+				   self)
 end
 
 --[[--
@@ -3098,15 +4675,12 @@ end
    go to the next bit of unread text
    if all text is read, display the current dialogue node's buttons
 ]]
-function Dialogue:next()
-   table.print(self)
-   print("a")
-   if self.textbox:next() then
-	  print("B")
+function Dialogue:next(b, c)
+   self.named.actions:moveTo(0, 0)
+   if self.named.textbox:next() then
 	  local buttons = self:fetch().buttons
 	  if buttons then
-		 print("C")
-		 self.buttons:setButtons(buttons.fns, buttons.texts)
+		 self:setButtons(buttons.fns, buttons.texts)
 	  end
    end
 end
@@ -3118,19 +4692,18 @@ Goes to a dialogue/point pair, loads dialogue
 @param point 
 ]]
 function Dialogue:go(dialogue, point)
+   self.named.actions:moveTo(0, 0)
    self.dialogue = dialogue
    self.point = point
-   print(self:fetchText())
-   self.textbox:setText(self:fetchText())
-   self.buttons:setButtons({self.next},{"Next"})
+   self.named.textbox:setText(self:fetchText())
+   self:setButtons({self.next},{"Next"})
 end
 
 --[[--
    draw the dialogue
 ]]
 function Dialogue:draw()
-   self.buttons:draw()
-   self.textbox:draw()
+   Flex.draw(self.views)
 end
 
 --[[
@@ -3142,29 +4715,28 @@ click on button
 @return whether any button was clicked
 ]]
 function Dialogue:click(x,y)
-   local b = self.buttons:which(x,y)
-   if b then
-	  b.click(self)
-	  return true
-   end
-   return false
+   return Flex.click({x, y}, self.views, self.rects)
 end
 
 --[[--
    resize that boy
 ]]
 function Dialogue:resize()
-   UIElement.recalc(self.scene)
-   self.buttons:resize()
-   self.textbox:resize()
+   self.rects = Flex.calculateRects(self.cells, {0,0,SCREEN_WIDTH,SCREEN_HEIGHT})
+   Flex.setRects(self.views, self.rects)
 end
 
 --[[--
    destroy the boy
 ]]
 function Dialogue:destroy()
-   self.buttons:destroy()
-   self.textbox:destroy()
+   Flex.destroy(self.views)
+   self.rects = nil
+   self.views = nil
+   self.named = nil
+   self.cells = nil
+   self.point = nil
+   self.dialogue = nil
 end
 
 --[[
@@ -3186,15 +4758,37 @@ function Dialogue.Start()
 end
 
 --[[
-mouse down
+   standard Flex mouse down
 
-@param x 
-@param y 
+   @param x 
+   @param y 
 ]]
 function Dialogue.MouseDown(x,y)
-   if D.test then
-	  D.test:click(x,y)
-   end
+   Flex.mouseDown(D.test, x, y)
+end
+
+--[[
+   standard Flex mouse move
+
+   @param x 
+   @param y 
+]]
+function Dialogue.MouseMove(x,y)
+   Flex.mouseMove(D.test, x, y)
+end
+
+function Dialogue.MouseWheel(x,y,dx,dy)
+   Flex.mouseWheel(D.test, x, y, dx, dy)
+end
+
+--[[
+   standard Flex mouse up
+
+   @param x 
+   @param y 
+]]
+function Dialogue.MouseUp(x,y)
+   Flex.mouseUp(D.test, x, y)
 end
 
 --[[
@@ -3227,7 +4821,21 @@ end
 
 Util.try(isMain, D)
 return "this is the story of a girl, who cried a river and drowned the whole world, but while she looked so sad and lonely there, I absolutely love her - when she smiled. How many days in the year, she woke up with hope but she only found tears, and how did I end up this way - making her promises never for real"
-return {"overlay.lua","story/","test-text.lua","util.lua"}require("dialogue/util")
+return {
+   axis=vertical,
+   children={
+	  {class=UITextBox,
+		   name="textbox",
+		   text="testing",
+		   bg="ff0000",
+		   size={1,"w"}},
+	  {class=UIList,
+	   axis = vertical,
+	   name = "actions",
+	   size={100,"dp"}},
+   },
+}
+require("dialogue/util")
 
 return {
    ["main-entry"]={
@@ -3245,7 +4853,16 @@ return {
 	  }
    }
 }
-UpdateStack = {}
+return {"fakes.lua","static.lua"}UpdateStack = {}
+
+function uloadfile(fname, mode, env)
+   local mod = Game.static.readfile(fname)
+   local x = load(mod, fname, mode, env)
+   if x then
+      x = x()
+   end
+   return x
+end
 
 --[[--
    indexing checks metatable first
@@ -3313,7 +4930,7 @@ end
    @return contents
 ]]
 function listdir(path)
-   return dofile(path .. ".contents.lua")
+   return dofile(path .. "contents.lua")
 end
 
 --[[--
@@ -3412,7 +5029,7 @@ function table.map(t, fn)
 end
 
 if Game then makeGlobal(Game) end
-return {"fakes.lua","static.lua"}require("util/static")
+require("util/static")
 function Fake()
    local mt = {}
    mt.__index = function(t, f)
@@ -3435,7 +5052,7 @@ function TTF.size(x)
    return #x
 end
 
-return {
+return {"large-boi-test.lua","money-goal-test.lua","spawner-test.lua","test.lua"}return {
   version = "1.1",
   luaversion = "5.1",
   tiledversion = "1.1.5",
@@ -4301,7 +5918,7 @@ return {
     }
   }
 }
-return {"large-boi-test.lua","money-goal-test.lua","spawner-test.lua","test.lua"}return {
+return {
    version = "1.2",
    luaversion = "5.1",
    tiledversion = "1.2.1",
@@ -4337,7 +5954,7 @@ return {"large-boi-test.lua","money-goal-test.lua","spawner-test.lua","test.lua"
       }
    }
 }
-return {
+return {"collectables.lua"}return {
   version = "1.2",
   luaversion = "5.1",
   tiledversion = "1.2.1",
@@ -4373,29 +5990,27 @@ return {
     }
   }
 }
-return {"collectables.lua"}require("ui/TextBox")
+require("ui/TextBox")
 
 MoneyUI = {}
 
 function MoneyUI.get(named)
       return TextBox.new({text="0$", layout=named.money})
 end
-require("ui/TextBox")
+return {"object.lua","ui.lua"}require("ui/TextBox")
 
 MoneyUI = {}
 local M = MoneyUI
 
 function MoneyUI.new(named)
-   local t = TextBox.new({text="0$", layout=named.money})
+   local t = named.money
    t.set = M.set
    return t
 end
 
 function MoneyUI:set(x)
-   self:setText(tostring(x) .. "$")
+   self:setData({text=tostring(x) .. "$"})
 end
-
-
 require("util")
 require("battle/collectable")
 
@@ -4454,7 +6069,7 @@ function M:take(player, slug)
    self:removeFromMap()
    player.money:add(self.value)
 end
-return {"object.lua","ui.lua"}require("util")
+return {"tilesets.lua"}require("util")
 Tileset = Class()
 
 --[[--
@@ -4658,69 +6273,69 @@ function Tileset:loadTilesets()
    end
 end
 
-return {"tilesets.lua"}do
+return {"save.lua","static/"}do
    local function str(x)
-	  local t = type(x)
-	  if t == "table" then
-		 return table.tostring(x)
-	  elseif t == "string" then
-		 return string.format("%q", s)
-	  else
-		 return tostring(x)
-	  end
+      local t = type(x)
+      if t == "table" then
+	 return table.tostring(x)
+      elseif t == "string" then
+	 return string.format("%q", x)
+      else
+	 return tostring(x)
+      end
    end
 
    function table.tostring(tbl)
-	  local data = {"{"}
-	  local len = #tbl
-	  local c = false
-	  for i = 1,len do
-		 if c then
-			table.insert(data,",")
-		 end
-		 c = true
-		 table.insert(data,str(tbl[i]))
-	  end
-	  local t 
-	  for k,v in pairs(tbl) do
-		 t = type(k)
-		 if t == "number" then
-			if k < 1 or k > len or k ~= k // 1 then
-			   if c then
-				  table.insert(data,",")
-			   end
-			   c = true
-			   table.insert(data,"["..tostring(k).."]=")
-			   table.insert(data,str(v))
-			end
-		 elseif t == "string" then
-			if c then
-			   table.insert(data,",")
-			end
-			c = true
-			table.insert(data,"["..string.format("%q", k).."]=")
-			table.insert(data,str(v))
-		 else
-			if c then
-			   table.insert(data,",")
-			end
-			c = true
-			table.insert(data,"["..tostring(k).."]=")
-			table.insert(data,str(v))
-		 end
-	  end
-	  table.insert(data, "}")
-	  return table.concat(data)
+      local data = {"{"}
+      local len = #tbl
+      local c = false --do comma
+      for i = 1,len do
+	 if c then
+	    table.insert(data,",")
+	 end
+	 c = true
+	 table.insert(data,str(tbl[i]))
+      end
+      local t 
+      for k,v in pairs(tbl) do
+	 t = type(k)
+	 if t == "number" then
+	    if k < 1 or k > len or k ~= k // 1 then
+	       if c then
+		  table.insert(data,",")
+	       end
+	       c = true
+	       table.insert(data,"["..tostring(k).."]=")
+	       table.insert(data,str(v))
+	    end
+	 elseif t == "string" then
+	    if c then
+	       table.insert(data,",")
+	    end
+	    c = true
+	    table.insert(data,"["..string.format("%q", k).."]=")
+	    table.insert(data,str(v))
+	 else
+	    if c then
+	       table.insert(data,",")
+	    end
+	    c = true
+	    table.insert(data,"["..tostring(k).."]=")
+	    table.insert(data,str(v))
+	 end
+      end
+      table.insert(data, "}")
+      return table.concat(data)
    end
 end
 if not Start then
    function Start()
-	  file = io.open("asdf.lua","wb")
-	  file:write("return " .. table.tostring({nil,true,false,2,"3",a={["as\n\r\tdf"]=12,b={"bolb", c={"cat",d={"dog",e="egg"}}}},[0]=1234,[0.4]=0.3}))
-	  file:close()
+      file = io.open("asdf.lua","wb")
+      file:write("return " .. table.tostring({nil,true,false,2,"3",a={["as\n\r\tdf"]=12,b={"bolb", c={"cat",d={"dog",e="egg"}}}},[0]=1234,[0.4]=0.3}))
+      file:close()
    end
 end
-return {"save.lua","static/"}return {
+return {
    slugs={{["type"]="test2", number=1}, {["type"]="test", number=2}}
 }
 require("util")
@@ -4806,7 +6421,7 @@ function Sector:destroy()
    self.data = nil
    self.tiles = nil
 end
-require "util"
+return {"Sector.lua","load.lua","sectors/"}require "util"
 local isMain = Util.isMain()
 require "world/Sector"
 require "tiled/tilesets"
@@ -4828,7 +6443,7 @@ function World.Start(argc, argv)
 end
 
 --[[
-   resize shit
+   resize things
 
    @param w 
    @param h 
@@ -4840,7 +6455,7 @@ function World.Resize(w, h)
 end
 
 --[[--
-   draw shit, update map
+   draw things, update map
 ]]
 function World.Update()
    --Update = static.quit
@@ -4849,7 +6464,7 @@ function World.Update()
 end
 
 --[[
-   destroy shit
+   destroy things
 ]]
 function World.End()
    W.sector:destroy()
@@ -4907,7 +6522,7 @@ function World.MouseDown(x, y)
 end
 
 Util.try(isMain, World)
-return {"Sector.lua","load.lua","sectors/"}return {
+return {
    objects={
 	  {
 		 name="Object A",
@@ -5195,7 +6810,7 @@ function Button:destroy()
 	  self.spr:destroy()
    end
 end
-require("util")
+return {"Button.lua","ListButton.lua","TextBox.lua","UIElement.lua","style-writer.lua","styles/"}require("util")
 
 UIElement = {named={}}
 meta(UIElement)
@@ -5345,225 +6960,85 @@ end
 function UIElement:rect()
    return {self.x, self.y, self.w, self.h}
 end
-require("util")
-local isMain = Util.isMain()
-require("ui/UIElement")
-require("ui/Button")
-ListButton = Class()
-local LB = ListButton
+return {
+   load="ui/style-writer.lua",
+   doInitSDL=false
+}
+ListButton = {}
 
---[[--
-   creates a new list button
-
-   a ui element that contains multiple buttons in a list, and possibly a space for some text above or below it.
-
-   if align = 2 then there is no child container space
-
-   MUST CALL init before use
-   
-   @param name unique id
-   @param fns callbacks for buttons
-   @param texts texts for buttons
-   @param height height of one button
-   @param space space between buttons
-   @param align {1=align button top, 2=middle, 3=bottom}
-
-   @return new list button
-]]
-function ListButton.new(name, fns, texts, height, space, align)
+function ListButton.init(elem, fns, texts, height, space, context)
    space = space or 0
    height = height or 30
    local nb = #fns
-   local self = New(LB)
-   self.name = name
-   self.fns = fns
-   self.texts = texts
-   self.height = height
-   self.space = space
-   self.align = align
-   self.c = {}
-   if align ~= 2 then
-	  self.child = {
-		 n=self.name .. "-c",
-		 s="lbChild",
-		 d={n=nb,align=align,s=space,h=height}}
-	  table.insert(self.c, self.child)
+   local cells = {}
+   local buttons = {}
+   local spacer = {size={space, "dp"}}
+   local btn = {size={height,"dp"}}
+   -- have to insert buttons by index due to #tbl not counting nils
+   local bi = 1
+   for i = 1, nb do
+	  table.insert(cells, btn)
+	  local b = UIButton.new({context=context})
+	  b:setData({
+			color="0000ff",
+			text=texts[i],
+			click=fns[i],
+	  })
+	  buttons[bi] = b
+	  bi = bi + 1
+	  if i ~= nb then
+		 buttons[bi] = nil
+		 bi = bi + 1
+		 table.insert(cells, spacer)
+	  end
    end
-   table.insert(self.c, {
-				   n=self.name .. "-b",
-				   s="listButton",
-				   d={n=1, align=align, s=space, h=height, i=0}})
-   self.container = {n=self.name .. "-p",s="lbContainer",c=self.c}
-   self.initialized = false
+   buttons.n = nb * 2 - 1 -- #buttons + #spaces
+   elem:setData(cells, buttons)
+end
+
+function ListButton.heightOf(n, height, space)
+   space = space or 0
+   height = height or 30
+   return n * height + (n - 1) * space
+end
+require("util")
+UIGroup = Class()
+
+function UIGroup.new(items)
+   local self = {items=items}
+   setmetatable(self, UIGroup)
    return self
 end
 
---[[--
-   finish initialize button once layout is loaded
-
-   @param named Named ui elements
-]]
-function ListButton:init(named)
-   self.named = named
-   if not self.initialized then
-	  self.btns = {}
-	  local layout = named[self.name .. "-b"]
-	  local nb = #self.fns
-	  self.container = named[self.name .. "-p"]
-	  self.container.c={}
-	  local c = self.container.c
-	  if self.align ~= 2 then
-		 self.child=named[self.name .. "-c"]
-		 self.child.d.n = nb
-		 table.insert(c, self.child)
-	  end
-	  for i = 1,nb do
-		 local d = {n=nb, align=self.align, s=self.space, h=self.height, i=(i-1)}
-		 local cpy = layout:copy(d)
-		 table.insert(c, cpy)		 
-		 table.insert(self.btns, Button.new({
-							text=self.texts[i],
-							layout=cpy,
-							color={0,0,200,255},
-							click=self.fns[i]}))
-	  end
-	  UIElement.recalc({self.container})
-	  self.initialized = true
+function UIGroup:draw()
+   for i, v in self.items do
+      v:draw()
    end
 end
 
---[[--
-   resize my boy
-]]
-function ListButton:resize()
-   for i,b in ipairs(self.btns) do
-	  b:resize()
+function UIGroup:resize()
+   for i, v in self.items do
+      v:resize()
    end
 end
 
---[[--
-   draw my boy
-]]
-function ListButton:draw()
-   for i,b in ipairs(self.btns) do
-	  b:draw()
+function UIGroup:destroy()
+   for i, v in self.items do
+      v:destroy()
    end
+   self.items = nil
 end
 
---[[--
-   Sets up new buttons to replace the old. Number of buttons does not have to remain constant
-
-   WARNING, you may need to resize your child elements of this button after calling this
-
-   @param fns New onclicks
-   @param texts New texts
-]]
-function ListButton:setButtons(fns, texts)
-   local named = self.named
-   self:destroy()
-   self.fns = fns
-   self.texts = texts
-   self:init(named)
-   self:resize()
-end
-
---[[--
-   destroy my boy
-]]
-function ListButton:destroy()
-   if self.btns then
-	  for i,b in ipairs(self.btns) do
-		 b:destroy()
-	  end
+function UIGroup:which(x, y)
+   for i, v in self.items do
+      local result = v:which(x,y)
+      if result then
+	 return result
+      end
    end
-   self.initialized = false
-   self.btns = nil
-   self.named = nil
+   return nil
 end
-
---[[--
-   which of our boys was pressed
-
-   @param x 
-   @param y 
-
-   @return that boy, index or just like nil
-]]
-function ListButton:which(x,y)
-   return Button.which(self.btns, x,y)
-end
-
--- TESTS BELOW
-
---[[
-   test click callback
-]]
-function ListButton:testClick()
-   print(self.text)
-end
-
---[[
-   click our boys
-
-   @param x 
-   @param y 
-]]
-function ListButton.MouseDown(x,y)
-   local b = LB.buttons:which(x,y)
-   if b then
-	  b:click()
-   end
-end
-
---[[
-   resize scene
-
-   @param w 
-   @param h 
-]]
-function ListButton.Resize(w,h)
-   Util.Resize(w,h)
-   UIElement.recalc(LB.scene)
-   LB.buttons:resize()
-end
-
---[[
-   test boys
-]]
-function ListButton.Start()
-   require("ui/TextBox")
-   LB.buttons = ListButton.new(
-	  "boye",
-	  {LB.testClick,LB.testClick,LB.testClick,LB.testClick},
-	  {"a","bb", "cs", "doo", "eff"},
-	  60, 10, 3)
-   LB.scene = {{s="screen",c={LB.buttons.container}}}
-   LB.named, LB.scene = UIElement.getNamed(
-	  LB.scene, getStyles({"list-button", "screen"}))
-   LB.buttons:init(LB.named)
-   --since algin is != 2, we have a self.child style
-   LB.t = TextBox.new({text="testing testing 123", layout=LB.buttons.child})
-end
-
---[[
-   test boys
-]]
-function ListButton.Update()
-   --Update=static.quit
-   LB.buttons:draw()
-   LB.t:draw()
-end
-
---[[
-   stop test boys
-]]
-function ListButton.End()
-   LB.buttons:destroy()
-   LB.t:destroy()
-end
-
-Util.try(isMain, LB)
-return {"Button.lua","ListButton.lua","TextBox.lua","UIElement.lua","style-writer.lua","styles/"}require("ui/UIElement")
+require("ui/UIElement")
 require("data/save")
 --[[--
    Takes stylesheet lua files and converts
@@ -5617,6 +7092,16 @@ function generateStyle(fname, style)
    handle:write("}")
    handle:close()
 end
+require("util")
+UIGroup = class()
+
+function Group.new(items)
+   local self = {items=items}
+   setmetatable(self, UIGroup)
+   return self
+end
+
+function Group:draw(self)
 return {
    screen={
 	  h="SCREEN_HEIGHT",
@@ -6055,7 +7540,7 @@ RêÇ¸—»ˇ˘‚ÑXÁì    IENDÆB`ÇâPNG
 
    IHDR   ®   ®   tK•¥   bKGD ˇ ˇ ˇ†Ωßì   	pHYs     öú   tIME‚ +ﬂ*ÍÈ   ÑIDATx⁄Ì¡1   ¬†ıOmo†                                                                                                             ‡7π∑ åÛ9·    IENDÆB`ÇâPNG
 
-   IHDR   (   (   å˛∏m   4IDATx⁄ÌŒ1  †˙7›™X≤ê>AAAAAAAAAAAAAAAAAAAAAAA¡ úËiÀak¬    IENDÆB`ÇâPNG
+   IHDR   (   (   å˛∏m   4IDATx⁄ÌŒ1  †˙7›™X≤ê>AAAAAAAAAAAAAAAAAAAAAAA¡ úËiÀak¬    IENDÆB`Çreturn {"arrs.png","check.png","collectables.png","headsprites.png","sectors/","tailsprites.png","testbody.png","testhead.png","tile.png","tiles.png"}âPNG
 
    IHDR   ®   p   ä&;ˆ   bKGD ˇ ˇ ˇ†Ωßì   	pHYs  ¬  ¬(JÄ   tIME‚B–°  IDATx⁄ÌùXîe∫«?Ô03`˛\r”¸—÷À-V.a≤iV£öàGîXéπ∂#¥WJùMñ√±hËV∂mñß¨CnπVä¯sÅ3¢W‚èU1ÂNh»!êQôÛ«Å.ñfÜÁf∆w∆˜{]ÔpΩÔÛÛ;œs?˜}?˜≠†AuàòFP⁄ÛlΩèHwîwÍ4R“yxóÖãæ6‘ì…§[ô—¯ÒƒPfπ´ÃõÉ~Á(Ó?W√'VÆ˘“xË4J®kÂ\ˇñu{x—"ÔÔ›«á´˛H,`ÎÈ›	˜0m’K|i¶Ø∂Çj¯ y‚ÿ˜Ú´Ã{ÁéòÓ@	«T^I5\glZœö÷Zl"O≈ﬂ(ü=É‡ÆﬂÁm‡]—Ôã∂≥ŸÊãì∂Ç™ Î◊í=ìdëwõæ£.Â%˘4èÍÆˇØˇÜøéπõâ∑eTOeåŒÿ¡∑2bˇa”ˆ∆∆Fm48∆+I]˘öŒr1)Å0GeÕ4”ˇX1•¢Âm|üWµ–‡ô©Ão≠•]ÑL-5\I}û®û ú≈ê 2¨¢$]ªöe⁄Lh¯^XBDs5óEâîùAÇhŸ„[o•A¥Ï◊≥yFõﬂ#)ÅIï4ãË˝5d»÷±4ëá.T—*X«µ¨4‚µô—¿¢xBÍ≠ú%g˛f>2ôLäã"DúåëíÃ⁄›¿àçadu9ÁD…YZƒÛtåΩ©Û˝5dà÷w°äKK{÷ßjCÃ~ú¡ßqBî,'ˆsd÷π£Óº¨≠∑°íÔ/"Tõ±≤Íü™ì|3/ö·Ó™ﬂÜæ∏ê—˙Î*¯vacµôª`ûé±ƒÇEbª∞(û¸H+Ê†Ãè$.Ü;¥ÙcòL&]˛f6àí¢πö∂ñòÃ ¯⁄
 Eﬂü≈– 2æmOes¢™Õ§üb”zﬁ%Ck-Ì+“yJFlË¥ﬂg¶+˙ù¨é‘ù≤∞a˝Z≤%»)e—âòFPâÖ›]WﬁîdqÁÊ•âLï1Ÿ«æÊ¶ß¡	^…b±9s?d≠åÿP¥ù\;v˙ñg3Y¥ú¨4~!™#m≠≈V\H~oU^TÄÃTÊ∑‘pUt‚˜Â≥”Ü^BlpËñWo•ÈÈÖL-KFG⁄Zã≠pü¯äõûK»yõÂ&ì…oΩ¯_X¬c2[ÁÒEöÈÁN±°Êµb-ZÊ∂çº'C“ººÎ™eK’xv1S:MwÊÈ¸≠≤ˆı 2*ÁFq´h˘2nygø‰Ã‹(Ü	™¡≈Ö êÙ√wXÂWìóíÃå¶≥¥tv∞ƒÇe¶ô˛˛“ø±åñ±Ø◊UPø0éq2bÉåºÿZã≠¸ e›ΩÓùhî‡®ßujó…ûlÆ¶≠{èS:˚q˚zˇbcYYF•åΩ;)Åp	±A -Ø€ÈªDTÑòÕà™ìT…î/£ÉU%^[Abk-◊u‘!Nƒ∆0“W˚'k_o≠ÂZ˙2ÊzJl∞˜îX∞DL#P§æÑ‹”P…ô˛d¶Ú§'«ÿc'≤µ´Yˆ´ßX8®‡«Ñ2ß°ëø=Œy_"ÁL3˝≥2(4›Œ=¢ﬂºìCrJˇ%ÚÓ¢xBV§Sÿ˜&ˆ¶ùCá`∫˝6~ZU¡fÎ9⁄ùΩ{¯(µ6á'á3Oß‚Ü2Ò~fµ∑sx_	_˘AM&ìÚßïç´‚bxQ‰˝~}Ù‚ö/Ú˘Å√T˘9Õ”1d,c˚›cxPÙõ¨˘Â3bc√»ïÏ8Ä[‹—ﬁ√sÀ0~Rrÿ¥µßKr_ÏÁÙM}®üH¥≥≈•:‹OtÀ%>ﬂê3Íû∏0dÆøvsíhñ±C_/tÿ◊?íÈ€ﬁùl’∫ 6?«ä)›Ó#ÕÙ≠9EçL˘9o≥\Õ´ä±püÙf õ´πúô |µÎre˙TsäQ3aƒ4e‹ÚdûSá8!z(5á∞w'[e Ô¸wªé€-[|§ôæ/˛ÜºÓÔ]<!ùéÄIâ˛— Í
@@ -6073,7 +7558,7 @@ PfØ”≥ŒõnrŒpõ¬»|=˘?Rî`np∏uB2Sôˇ‹ØYØp=CŸg≈|∫Ím‚-Ö¥π£M2'›Ì∂SÆ0π._Ø	É?3ŸXù"8
 \G?ËÁ»g≥¡»yo¯ö˙}Æ!Ç{Ú’l6“ÏiüSøO‰•A√Ü9Û—ÏÓÌIﬂSøOÖ®AcF;ÚÕtÙ¥i˜î™ﬂ'ì’ é	
 Ï˘dä>ûEı˜t‹:çvbò¢0π»@—èÂWÀX¶WñΩ•gç›˛ñ™ô§m[ÍÏç†à‘ôo†`†¢ÏmYâJ“&=õºË˛ßJíäêS#® buƒÊÈ…Î£(}‹UftÄΩKœN/∫™ä§¢‰‘⁄ít$˛≈†¸≈†(wó˝pÄÚH∂ﬁ´˜£TARr¸)Ë(ÀAgÆ    IENDÆB`ÇâPNG
 
-   IHDR         çâ   bKGD ˇ ˇ ˇ†Ωßì   	pHYs     öú   tIME‚U/v4  ŒIDAT8À•î;K$AÖÔ®3ä b` ¶ö	c ˛ #≥◊Gn ˘:ı±©Ç°8Ã¬¸5”§@êÇ—]¡@YZÂû:åvOMw;é{††ÎRı—˜QG$E÷⁄Ç™.(;Á. <x~ˇ.´Ííµ∂ _ë™˛tŒ]≥ç \©Í|&®R©t¯≈`;ÇÆ;∞&Ëf"M˛ßTu.j Ä´é	˚˚‰›]¥uŒ˝±÷DUó;Üë==‰ƒ˘¯ÿ¸óã‡wG∞€[rxòi¨…IÚÈÈ£ñ%P˚2ÏÂÖúöäa"d_y|¸ëˆÖ [Zñ\YÒa‰·as∑C¯ˆFŒŒí;;IÿÓÆ"ONZ«ÁØ ∏å"kkç√πú==%{{cÿ»y~û6èUP&I÷j‰‡`|)ó#˜ˆ»˚{rt4éèèì77Y~ ™∫EÍu≤XÙ°ccÒæX$>Ó1∆‰ùsuØì´´~ΩD»ÈioÊZÂúªéHUÁS_B63CÜaªß˜£’∂ßŒŒ»ıuÚıµù9l$‹&Ç. [ﬂqöT˚jrû9Ø¶Ÿ5´'“Ãí1&Ø™ã J ™ ¬˜UPR’cL>ÌÓ?/‰¬ñÛu*]    IENDÆB`Çreturn {"arrs.png","check.png","collectables.png","headsprites.png","sectors/","tailsprites.png","testbody.png","testhead.png","tile.png","tiles.png"}âPNG
+   IHDR         çâ   bKGD ˇ ˇ ˇ†Ωßì   	pHYs     öú   tIME‚U/v4  ŒIDAT8À•î;K$AÖÔ®3ä b` ¶ö	c ˛ #≥◊Gn ˘:ı±©Ç°8Ã¬¸5”§@êÇ—]¡@YZÂû:åvOMw;é{††ÎRı—˜QG$E÷⁄Ç™.(;Á. <x~ˇ.´Ííµ∂ _ë™˛tŒ]≥ç \©Í|&®R©t¯≈`;ÇÆ;∞&Ëf"M˛ßTu.j Ä´é	˚˚‰›]¥uŒ˝±÷DUó;Üë==‰ƒ˘¯ÿ¸óã‡wG∞€[rxòi¨…IÚÈÈ£ñ%P˚2ÏÂÖúöäa"d_y|¸ëˆÖ [Zñ\YÒa‰·as∑C¯ˆFŒŒí;;IÿÓÆ"ONZ«ÁØ ∏å"kkç√πú==%{{cÿ»y~û6èUP&I÷j‰‡`|)ó#˜ˆ»˚{rt4éèèì77Y~ ™∫EÍu≤XÙ°ccÒæX$>Ó1∆‰ùsuØì´´~ΩD»ÈioÊZÂúªéHUÁS_B63CÜaªß˜£’∂ßŒŒ»ıuÚıµù9l$‹&Ç. [ﬂqöT˚jrû9Ø¶Ÿ5´'“Ãí1&Ø™ã J ™ ¬˜UPR’cL>ÌÓ?/‰¬ñÛu*]    IENDÆB`ÇâPNG
 
    IHDR   (   (   å˛∏m  kIDATx⁄ÌògHUq∆üLK-3-≥ÃñQ∂≤e√R≤,€É(⁄ÛCã0Z®eQòñ4,€;lÔ¢Q˙–Ñà¢ Ç (ÇßÛv1™⁄UÔçÓáóˇ·ŒΩÁwﬁÒºÔ9‡–õ>@‡ø¯ x/¸r◊KÔÏOs2¡o˜ΩPP”ÜÅ—ë‡ËÛm/Ã¡◊g¡§N`ï ∞yLÈC˛5†ÚÓJ.8~ òÜU˝¸¿à0„5/ îßv≠;∑[7õ6 C™§éK+'›
 Ò—`bG∞aV¸r`O/ <∑Ïﬂ¨_¨Q› +Ä˛˛:gåáo‰ÅÉ{Y≤r%Ûû¨bE∞j0x=œÉÄoŒÉi„¡6M¡1Ê=úVy±oW˜Ú—môy	ÃöeRS+‹
@@ -6144,7 +7629,7 @@ Gailly and Mark Adler; it does not include third-party code.
 If you redistribute modified sources, we would appreciate that you include in
 the file ChangeLog history information documenting your changes.  Please read
 the FAQ for more information on the distribution of modified source versions.
-Simple DirectMedia Layer
+return {"ABOUT.txt","LICENSE.SDL2.txt","LICENSE.SDL2_image.txt","LICENSE.SDL2_mixer.txt","LICENSE.SDL2_ttf.txt","LICENSE.freetype.txt","LICENSE.jpeg.txt","LICENSE.mozart.txt","LICENSE.ogg-vorbis.txt","LICENSE.png.txt","LICENSE.tiff.txt","LICENSE.zlib.txt"}Simple DirectMedia Layer
 Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
   
 This software is provided 'as-is', without any express or implied
@@ -6300,7 +7785,7 @@ Eric Londres
 
 Operator 12's source is at present under the MIT license
 
-View online at https://github.com/stephoro/operator-12
+View online at https://github.com/gaycodegal/operator-12
 
 :D
 MOZART NBP
@@ -6359,7 +7844,7 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-return {"ABOUT.txt","LICENSE.SDL2.txt","LICENSE.SDL2_image.txt","LICENSE.SDL2_mixer.txt","LICENSE.SDL2_ttf.txt","LICENSE.freetype.txt","LICENSE.jpeg.txt","LICENSE.mozart.txt","LICENSE.ogg-vorbis.txt","LICENSE.png.txt","LICENSE.tiff.txt","LICENSE.zlib.txt"}The source code to this library used with SDL_image can be found here:
+The source code to this library used with SDL_image can be found here:
 http://www.libsdl.org/projects/SDL_image/libs/
 ---
 
@@ -6679,6 +8164,7 @@ function Player.prepareCurrentSlug()
    local slug = Player.slugs[Player.turni]
    local head = slug.head
    Player.slug = slug
+   Player.gameOver = false
    Player.pos = head.pos
    Player.moves = slug.stats.moves
    active = Player.move
@@ -6699,6 +8185,7 @@ end
    Trigger player losing the battle
 ]]
 function Player.lose()
+   Player.gameOver = true
    End()
    Util.setController(MapSelect)
    Start()
@@ -6708,6 +8195,7 @@ end
    Trigger player battle win
 ]]
 function Player.win()
+   Player.gameOver = true
    End()
    Util.setController(MapSelect)
    Start()
@@ -6718,7 +8206,7 @@ end
 ]]
 function Player.returnControl()
    if Player.slug then
-	  Player.slug:destroyOverlay()
+      Player.slug:destroyOverlay()
    end
    Player.slug = nil
    Player.pos = nil
@@ -6737,18 +8225,18 @@ function Player.prepareForTurn()
    Player.turni = 1 -- which slug's turn is it
    j = 1
    for i, slug in pairs(slugs) do
-	  if slug then
-		 if slug.team == 1 then
-			Player.slugs[j] = slug
-			j = j + 1
-		 end
-	  end
+      if slug then
+	 if slug.team == 1 then
+	    Player.slugs[j] = slug
+	    j = j + 1
+	 end
+      end
    end
    Player.nslugs = j-1 -- number of enemies to go.
    if Player.nslugs <= 0 then
-	  Player.returnControl()
-	  Player.lose()
-	  return
+      Player.returnControl()
+      Player.lose()
+      return
    end
    Player.prepareCurrentSlug()   
 end
@@ -6761,14 +8249,17 @@ end
 ]]
 function Player.move(x, y)
    if Player.moves > 0 then
-	  if Player.slug:move(x,y) then
-		 Player.moves = Player.moves - 1
-	  end
+      if Player.slug:move(x,y) then
+	 Player.moves = Player.moves - 1
+      end
    end
    Player.slug:destroyOverlay()
+   if Player.gameOver then
+      return
+   end
    Player.slug:movementOverlay(Player.moves)
    if Player.moves <= 0 then
-	  Player.beginAttack()
+      Player.beginAttack()
    end
 end
 
@@ -6785,24 +8276,24 @@ function Player.attack(x,y)
    local obj = map.objects[ind]
    local skill = Skills[Player.slug.action.skill]
    if skill.can(Player.slug, obj, ind, x, y)  then
-	  skill.act(Player.slug, obj, ind, x, y)
+      skill.act(Player.slug, obj, ind, x, y)
    end
    Player.nextTurn()
 end
 
 --[[--
-moves onto the next slug or team
+   moves onto the next slug or team
 ]]
 function Player.nextTurn()
    Player.turni = Player.turni + 1
    if Player.turni > Player.nslugs then
-	  Player.returnControl()
-	  AI.prepareForEnemyTurns()
+      Player.returnControl()
+      AI.prepareForEnemyTurns()
    else
-	  Player.prepareCurrentSlug()
+      Player.prepareCurrentSlug()
    end
 end
-require("util")
+return {"ai.lua","player.lua"}require("util")
 AI = Class()
 --[[--
    creates a new AI
@@ -7173,7 +8664,7 @@ function AI.sortDist(all, pos)
    Segment._pos = nil
    return all   
 end
-return {"ai.lua","player.lua"}require "util"
+require "util"
 local isMain = Util.isMain()
 Heap = Class()
 local H = Heap
